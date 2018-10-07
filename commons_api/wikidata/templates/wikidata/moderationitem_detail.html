@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% load i18n %}
+
+{% block title %}Moderate{% endblock %}
+
+{% block content %}
+    <h1>Moderate: {{ model_meta.verbose_name }} — {{ object.object_id }}</h1>
+
+    {{ old_wikidata_item }}
+    {{ new_wikidata_item }}
+
+    <table>
+    <thead>
+    <tr>
+        <th>Attribute</th>
+        <th>Old</th>
+        <th>New</th>
+        <th>Changed?</th>
+    </tr>
+    </thead>
+    <tbody>{% for field in fields %}
+    <tr>
+        <td>{{ field.field_name }}</td>
+        <td>{{ field.old_value }}</td>
+        <td>{{ field.new_value }}</td>
+        <td>{{ field.changed|yesno }}</td>
+    </tr>{% endfor %}
+
+    </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,44 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-10-03 12:46+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: commons_api/wikidata/models.py:67
+msgid "[no label]"
+msgstr "[sin etiqueta]"
+
+#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:11
+#, python-format
+msgid ""
+"Legislative house of %(administrative_area)s in <a href=\"%(country_url)s\">"
+"%(country)s</a>."
+msgstr ""
+"Casa legislativa de %(administrative_area)s en <a href=\"%(country_url)s\">"
+"%(country)s</a>."
+
+#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:13
+#, python-format
+msgid "Legislative house of <a href=\"%(country_url)s\">%(country)s</a>."
+msgstr "Casa legislativa de <a href=\"%(country_url)s\">%(country)s</a>."
+
+#: commons_api/wikidata/templates/wikidata/legislativeterm_detail.html:8
+#, python-format
+msgid "This is a legislative term of one house:"
+msgid_plural "This is a legislative term of %(counter)s houses:"
+msgstr[0] "Este es un término legislativo de una casa:"
+msgstr[1] "Este es un término legislativo de %(counter)s casas:"

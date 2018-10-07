@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% load i18n %}
+
+{% block title %}{{ legislativehouse.label }}{% endblock %}
+
+{% block content %}
+    <h1>{{ legislativehouse.label }}</h1>
+    {% include "wikidata/wikimedia_links.html" %}
+
+    <p>
+        {% if legislativehouse.country_id != legislativehouse.administrative_area_id %}
+            {% blocktrans with administrative_area=legislativehouse.administrative_area country_url=legislativehouse.country.get_absolute_url country=legislativehouse.country %}Legislative house of {{ administrative_area }} in <a href="{{ country_url }}">{{ country }}</a>.{% endblocktrans %}
+        {% else %}
+            {% blocktrans with country_url=legislativehouse.country.get_absolute_url country=legislativehouse.country %}Legislative house of <a href="{{ country_url }}">{{ country }}</a>.{% endblocktrans %}
+        {% endif %}
+    </p>
+
+    <p><a href="{% url "wikidata:legislativemembership-list-current" legislativehouse_pk=legislativehouse.id %}">Current membership</a></p>
+
+    {% if legislativehouse.legislative_terms.count %}
+        <h2>Legislative terms</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Ordinal</th>
+                <th>Term</th>
+                <th>Start</th>
+                <th>End</th>
+            </tr>
+            </thead>
+            <tbody>{% for term in legislativehouse.legislative_terms.all %}
+                <tr>
+                    <td></td>
+                    <td><a href="{% url "wikidata:legislativemembership-list" legislativehouse_pk=legislativehouse.id legislativeterm_pk=term.id %}">{{ term }}</a></td>
+                    <td>{{ term.start|default_if_none:"" }}</td>
+                    <td>{{ term.end|default_if_none:"" }}</td>
+                </tr>{% endfor %}
+
+            </tbody>
+        </table>
+    {% else %}
+    {% endif %}
+
+{% endblock %}

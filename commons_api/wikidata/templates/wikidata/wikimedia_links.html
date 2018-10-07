@@ -1,0 +1,6 @@
+{% if object %}
+<a href="https://www.wikidata.org/wiki/{{ object.id }}">View on Wikidata</a>
+    {% if object.wikipedia_article %}
+        <a href="{{ object.wikipedia_article.href }}">View on Wikipedia</a>
+        {% endif %}
+{% endif %}

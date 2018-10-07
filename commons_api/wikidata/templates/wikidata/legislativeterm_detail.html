@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load i18n %}
+
+{% block title %}{{ legislativeterm.label }}{% endblock %}
+
+{% block content %}
+    <h1>{{ legislativeterm.label }}</h1>
+
+    {% if legislativeterm.start or legislativeterm.end %}
+    <p>{{ legislativeterm.start|default_if_none:"" }}–{{ legislativeterm.end|default_if_none:"" }}</p>
+    {% else %}
+    <p>{% blocktrans %}Term has no inception or dissolution date.{% endblocktrans %}</p>
+    {% endif %}
+
+    <p>{% blocktrans count counter=legislativeterm.legislativehouse_set.count %}This is a legislative term of one house:{% plural %}This is a legislative term of {{ counter }} houses:{% endblocktrans %}</p>
+
+    <ul>{% for house in legislativeterm.legislativehouse_set.all %}
+    <li><a href="{{ house.get_absolute_url }}">{{ house }}</a></li>{% endfor %}
+    </ul>
+
+{% endblock %}

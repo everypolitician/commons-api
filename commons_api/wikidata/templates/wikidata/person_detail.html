@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% load i18n %}
+
+{% block title %}{{ person.label }}{% endblock %}
+
+{% block content %}
+    <h1>{{ person.label }}</h1>
+    {% include "wikidata/wikimedia_links.html" %}
+    <p>
+        {% if person.facebook_id %}
+            <a href="https://www.facebook.com/{{ person.facebook_id }}">Facebook</a>
+        {% endif %}
+        {% if person.twitter_id %}
+            <a href="https://twitter.com/{{ person.twitter_id }}">Twitter</a>
+        {% endif %}
+    </p>
+
+    {% if person.image_url %}
+        <img src="{{ person.image_url }}" alt="Image of {{ person }}" style="border: 1px solid black; max-height: 20em; max-width: 30em;">
+    {% endif %}
+
+    <h2>Legislative memberships</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Legislature</th>
+            <th>Area</th>
+            <th>Position</th>
+            <th>Start</th>
+            <th>End</th>
+        </tr>
+        </thead>
+        <tbody>{% for membership in person.legislativemembership_set.all %}
+            <tr>
+                <td>{{ membership.legislative_house.link }}</td>
+                <td>{{ membership.legislative_house.administrative_area }}</td>
+                <td>{{ membership.position }}</td>
+                <td>{{ membership.start|default_if_none:"" }}</td>
+                <td>{{ membership.end|default_if_none:"" }}</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,39 @@
+SELECT DISTINCT
+       ?statement
+       ?person ?personLabel
+       ?party ?partyLabel
+       ?district ?districtLabel
+       ?role ?roleLabel
+       ?term ?termLabel ?termStart ?termEnd
+       ?start ?end
+       ?endCause ?endCauseLabel
+       ?subjectHasRole ?subjectHasRoleLabel
+WHERE {
+  VALUES ?role { {% for position in positions %}wd:{{ position.id }} {% endfor %}}
+  ?specificRole wdt:P279* ?role .
+  ?statement ps:P39 ?specificRole .
+  ?person wdt:P31 wd:Q5 ;
+          p:P39 ?statement .
+  OPTIONAL { ?statement pq:P580 ?start }
+  OPTIONAL { ?statement pq:P582 ?end }
+  OPTIONAL { ?statement pq:P768 ?district }
+  OPTIONAL { ?statement pq:P4100 ?party }
+  OPTIONAL { ?statement pq:P1534 ?endCause }
+  OPTIONAL { ?statement pq:P2868 ?subjectHasRole }
+
+  OPTIONAL {
+    ?statement pq:P2937 ?statementTerm .
+    OPTIONAL { ?statementTerm (wdt:P580|wdt:P571) ?statementTermStart . }
+    OPTIONAL { ?statementTerm (wdt:P582|wdt:P576) ?statementTermEnd . }
+  }
+  OPTIONAL {
+    ?specificRole wdt:P2937 ?specificRoleTerm .
+    OPTIONAL { ?specificRoleTerm (wdt:P580|wdt:P571) ?specificRoleTermStart . }
+    OPTIONAL { ?specificRoleTerm (wdt:P582|wdt:P576) ?specificRoleTermEnd . }
+  }
+  BIND(COALESCE(?statementTerm, ?specificRoleTerm) AS ?term)
+  BIND(COALESCE(?statementTermStart, ?specificRoleTermStart) AS ?termStart)
+  BIND(COALESCE(?statementTermEnd, ?specificRoleTermEnd) AS ?termEnd)
+
+  {% include 'wikidata/query/label_service.rq' %}
+} ORDER BY ?statement

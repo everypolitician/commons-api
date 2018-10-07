@@ -1,0 +1,10 @@
+celery
+Django
+django-dirtyfields
+django-reversion
+djangorestframework
+flower
+psycopg2
+rdflib
+sparqlwrapper
+requests
