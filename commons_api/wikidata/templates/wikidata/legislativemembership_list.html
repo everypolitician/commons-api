@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}{{ legislativehouse.label }} — {% if legislativeterm %}{{ legislativeterm.label }}{% else %}current membership{% endif %}{% endblock %}
+{% block title %}{{ legislativehouse.label }} — {% if legislativeterm %}{{ legislativeterm.label }}{% elif current_members %}current membership{% else %}all memberships{% endif %}{% endblock %}
 
 {% block content %}
-    <h1>{{ legislativehouse.link }} — {% if legislativeterm %}{{ legislativeterm.link }}{% else %}current membership{% endif %}</h1>
+    <h1>{{ legislativehouse.link }} — {% if legislativeterm %}{{ legislativeterm.link }}{% elif current_members %}current membership{% else %}all memberships{% endif %}</h1>
     {% include "wikidata/wikimedia_links.html" %}
     <table>
         <thead>
@@ -22,7 +22,7 @@
                 <th>{{ forloop.counter }}</th>
                 <td>{{ membership.person.link }}</td>
                 <td>{{ membership.person.sex_or_gender|default_if_none:"" }}</td>
-                <td>{{ membership.district|default_if_none:"" }}</td>
+                <td>{{ membership.district.link|default_if_none:"" }}</td>
                 <td>{{ membership.start|default_if_none:"" }}</td>
                 <td>{{ membership.end|default_if_none:"" }}</td>
                 <td>{{ membership.end_cause|default_if_none:"" }}</td>

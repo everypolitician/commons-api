@@ -20,3 +20,39 @@ class ModerationTestCase(TestCase):
         new_person = models.Person.objects.get()
         self.assertEqual(person.id, new_person.id)
         self.assertEqual(person.labels, new_person.labels)
+
+    def test_with_foreign_key_id(self):
+        term = models.Term(id='Q1', labels={'en': 'term'})
+        term.save(moderated=True)
+        person = models.Person(id='Q2', labels={'en': 'person'}, sex_or_gender_id='Q1')
+        person.save()
+
+        moderation_item = models.ModerationItem.objects.get()
+        self.assertEqual('Q1', moderation_item.data['sex_or_gender_id'])
+
+    def test_with_foreign_key_object(self):
+        term = models.Term(id='Q1', labels={'en': 'term'})
+        term.save(moderated=True)
+        person = models.Person(id='Q2', labels={'en': 'person'}, sex_or_gender=term)
+        person.save()
+
+        moderation_item = models.ModerationItem.objects.get()
+        self.assertEqual('Q1', moderation_item.data['sex_or_gender_id'])
+
+    def test_with_unsaved_foreign_key_id(self):
+        term = models.Term(id='Q1', labels={'en': 'term'})
+        term.save()
+        person = models.Person(id='Q2', labels={'en': 'person'}, sex_or_gender_id='Q1')
+        person.save()
+
+        moderation_item = models.ModerationItem.objects.get(object_id='Q2')
+        self.assertEqual('Q1', moderation_item.data['sex_or_gender_id'])
+
+    def test_with_unsaved_foreign_key_object(self):
+        term = models.Term(id='Q1', labels={'en': 'term'})
+        term.save()
+        person = models.Person(id='Q2', labels={'en': 'person'}, sex_or_gender=term)
+        person.save()
+
+        moderation_item = models.ModerationItem.objects.get(object_id='Q2')
+        self.assertEqual('Q1', moderation_item.data['sex_or_gender_id'])

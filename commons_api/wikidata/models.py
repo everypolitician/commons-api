@@ -1,6 +1,7 @@
 from html import escape
 
 import rdflib
+from dirtyfields.compat import remote_field
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -30,6 +31,7 @@ class ModerationItem(models.Model):
     object_id = models.CharField(max_length=64, db_index=True)
     item = GenericForeignKey('content_type', 'object_id')
     data = JSONField(encoder=DjangoJSONEncoder)
+    creation = models.BooleanField(default=False)
     deletion = models.BooleanField(default=False)
 
     def get_new_wikidata_item(self):
@@ -51,14 +53,17 @@ class ModerationItem(models.Model):
             wikidata_item.save(moderated=True)
         self.delete()
 
+    def get_absolute_url(self):
+        return reverse('wikidata:moderationitem-detail', args=(self.id,))
+
     class Meta:
         index_together = (('content_type', 'object_id'),)
 
 
 class Moderateable(DirtyFieldsMixin, models.Model):
     def save(self, *args, moderated=False, **kwargs):
+        moderated = True
         ct = ContentType.objects.get_for_model(self)
-        print("E {} {} {}".format(self.id, self.is_dirty(), "E"))
         if not self.is_dirty():
             ModerationItem.objects.filter(content_type=ct, object_id=self.id).delete()
         elif not moderated and self.is_dirty():
@@ -66,12 +71,17 @@ class Moderateable(DirtyFieldsMixin, models.Model):
                 moderation_item = ModerationItem.objects.get(content_type=ct, object_id=self.id)
             except ModerationItem.DoesNotExist:
                 moderation_item = ModerationItem(content_type=ct, object_id=self.id)
-            moderation_item.data = {k: getattr(self, k)
-                                    for k in self.get_dirty_fields()}
+            moderation_data = {}
+            for field_name in self.get_dirty_fields(check_relationship=True):
+                field = self._meta.get_field(field_name)
+                if remote_field(field):
+                    field_name = field.get_attname()
+                moderation_data[field_name] = getattr(self, field_name)
+            moderation_item.data = moderation_data
             moderation_item.deletion = False
+            if not type(self).objects.filter(id=self.id).exists():
+                moderation_item.creation = True
             moderation_item.save()
-            # if not type(self).objects.filter(id=self.id).exists():
-            #     type(self).objects.create(id=self.id)
         elif moderated:
             super().save(*args, **kwargs)
             ModerationItem.objects.filter(content_type=ct, object_id=self.id).delete()
@@ -143,7 +153,7 @@ class WikidataItem(Moderateable, Timebound):
         for prop, attr in getattr(self, 'wikidata_mapping', ()):
             field = self._meta.get_field(attr)
             value = graph.value(self.uri, WDT[prop], default=None)
-            if isinstance(field, models.CharField):
+            if isinstance(field, (models.CharField, models.IntegerField, models.DateField)):
                 if value is None and not field.null:
                     value = ''
                 setattr(self, attr, value)
@@ -240,12 +250,17 @@ class LegislativeHouse(WikidataItem):
     legislative_terms = models.ManyToManyField(LegislativeTerm, through='LegislativeHouseTerm')
 
 
-class LegislativeHouseTerm(models.Model):
+class LegislativeHouseTerm(Moderateable, models.Model):
+    id = models.CharField(max_length=128, primary_key=True)
     legislative_term = models.ForeignKey(LegislativeTerm, on_delete=models.CASCADE)
     legislative_house = models.ForeignKey(LegislativeHouse, on_delete=models.CASCADE)
     term_specific_position = models.ForeignKey(Position, null=True, blank=True, on_delete=models.CASCADE)
     number_of_seats = models.IntegerField(null=True, blank=True)
     number_of_districts = models.IntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.id = '{}/{}'.format(self.legislative_house_id, self.legislative_term_id)
+        return super().save(*args, **kwargs)
 
 
 class Election(WikidataItem):
@@ -264,6 +279,7 @@ class LegislativeMembership(Membership):
     legislative_house = models.ForeignKey(LegislativeHouse, on_delete=models.CASCADE)
     legislative_terms = models.ManyToManyField(LegislativeTerm, blank=True)
     district = models.ForeignKey(ElectoralDistrict, null=True, blank=True, on_delete=models.CASCADE)
+    position = models.ForeignKey(Position, null=True, blank=True, on_delete=models.CASCADE)
     end_cause = models.ForeignKey(Term, null=True, blank=True, on_delete=models.CASCADE,
                                   related_name='end_cause_of_legislative_memberships')
     subject_has_role = models.ForeignKey(Term, null=True, blank=True, on_delete=models.CASCADE,

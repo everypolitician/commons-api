@@ -78,6 +78,7 @@ def refresh_legislature_members(legislature_id):
     sparql.setQuery(get_template('wikidata/query/legislature_memberships.rq').render({'positions': house.positions.all()}))
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
+    print(get_template('wikidata/query/legislature_memberships.rq').render({'positions': house.positions.all()}))
     seen_statement_ids = set()
     for i, (statement, rows) in enumerate(itertools.groupby(results['results']['bindings'], key=lambda row: row['statement']['value'])):
         rows = list(rows)
@@ -129,6 +130,7 @@ def refresh_legislature_members(legislature_id):
         membership.end_cause = end_cause
         membership.start = get_date(first_row.get('start'))
         membership.end = get_date(first_row.get('end'))
+        membership.position_id = item_uri_to_id(first_row['role'])
         if not membership.start:
             try:
                 membership.start = min(term.start for term in legislative_terms if term.start)

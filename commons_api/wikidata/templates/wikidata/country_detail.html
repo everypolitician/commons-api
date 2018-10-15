@@ -7,6 +7,10 @@
 
     {% include "wikidata/wikimedia_links.html" %}
 
+    <form method="post">{% csrf_token %}
+      <input type="submit" name="refresh-legislature-list" value="Refresh legislature list">
+    </form>
+
     {% if country.population %}
     <p>Population: {{ country.population|intcomma }}</p>
     {% endif %}

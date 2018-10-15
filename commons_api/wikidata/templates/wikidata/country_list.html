@@ -4,6 +4,11 @@
 
 {% block content %}
     <h1>Countries</h1>
+
+    <form method="post">{% csrf_token %}
+      <input type="submit" name="refresh-country-list" value="Refresh country list">
+    </form>
+
     <ul>
     {% for country in country_list %}
     <li><a href="{{ country.get_absolute_url }}">{{ country.label }}</a></li>

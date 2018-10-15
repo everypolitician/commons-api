@@ -5,6 +5,8 @@
 {% block content %}
     <h1>{{ legislativeterm.label }}</h1>
 
+    {% include "wikidata/wikimedia_links.html" %}
+
     {% if legislativeterm.start or legislativeterm.end %}
     <p>{{ legislativeterm.start|default_if_none:"" }}–{{ legislativeterm.end|default_if_none:"" }}</p>
     {% else %}

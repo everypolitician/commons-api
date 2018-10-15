@@ -6,6 +6,10 @@
     <h1>{{ legislativehouse.label }}</h1>
     {% include "wikidata/wikimedia_links.html" %}
 
+    <form method="post">{% csrf_token %}
+      <input type="submit" name="refresh-legislature-members" value="Refresh legislature members">
+    </form>
+
     <p>
         {% if legislativehouse.country_id != legislativehouse.administrative_area_id %}
             {% blocktrans with administrative_area=legislativehouse.administrative_area country_url=legislativehouse.country.get_absolute_url country=legislativehouse.country %}Legislative house of {{ administrative_area }} in <a href="{{ country_url }}">{{ country }}</a>.{% endblocktrans %}

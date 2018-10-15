@@ -1,17 +1,30 @@
 import datetime
+
+from django.contrib import messages
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.db.models.fields.related import RelatedField
+from django.shortcuts import redirect
 from django.utils.functional import cached_property
+from django.views.generic.edit import ModelFormMixin, ProcessFormView
 from operator import attrgetter
 
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, FormView
 
-from . import models
+from commons_api.wikidata import tasks
+from . import forms, models
 
 
 class CountryListView(ListView):
     model = models.Country
     template_name = 'wikidata/country_list.html'
     context_object_name = 'country_list'
+
+    def post(self, request, *args, **kwargs):
+        if 'refresh-country-list' in request.POST:
+            tasks.refresh_country_list.delay()
+            messages.info(request, "Country list will be refreshed")
+        return redirect(self.request.build_absolute_uri())
 
     def get_queryset(self):
         # Sort in the user's chosen language
@@ -21,9 +34,27 @@ class CountryListView(ListView):
 class CountryDetailView(DetailView):
     model = models.Country
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if 'refresh-legislature-list' in request.POST:
+            tasks.refresh_legislature_list.delay(self.object.id)
+            messages.info(request, "Legislature list for {} will be refreshed".format(self.object))
+        return redirect(self.object.get_absolute_url())
+
 
 class LegislativeHouseDetailView(DetailView):
     model = models.LegislativeHouse
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if 'refresh-legislature-members' in request.POST:
+            tasks.refresh_legislature_members.delay(self.object.id)
+            messages.info(request, "Legislature membership for {} will be refreshed".format(self.object))
+        return redirect(self.object.get_absolute_url())
+
+
+class ElectoralDistrictDetailView(DetailView):
+    model = models.ElectoralDistrict
 
 
 class LegislativeTermDetailView(DetailView):
@@ -36,6 +67,8 @@ class PersonDetailView(DetailView):
 
 class LegislativeMembershipListView(ListView):
     model = models.LegislativeMembership
+    all_members = False
+    current_members = False
 
     @cached_property
     def legislative_house_term(self):
@@ -68,21 +101,42 @@ class LegislativeMembershipListView(ListView):
             'legislativeterm': self.legislative_term,
             'start': self.start,
             'end': self.end,
+            'current_members': self.current_members,
+            'all_members': self.all_members,
         })
         return context
 
     def get_queryset(self):
         qs = super().get_queryset().filter(legislative_house_id=self.kwargs['legislativehouse_pk'])
-        qs = qs.filter(start__isnull=False)
-        if self.start:
-            qs = qs.filter(Q(end__isnull=True) | Q(end__gte=self.start))
-        if self.end:
-            qs = qs.filter(Q(start__isnull=True) | Q(start__lte=self.end))
-        return qs.select_related('district', 'person', 'person__sex_or_gender')
+        if not self.all_members:
+            qs = qs.filter(start__isnull=False)
+        if self.current_members or self.legislative_term:
+            if self.start:
+                qs = qs.filter(Q(end__isnull=True) | Q(end__gte=self.start))
+            if self.end:
+                qs = qs.filter(Q(start__isnull=True) | Q(start__lte=self.end))
+            qs = qs.select_related('district', 'person', 'person__sex_or_gender')
+        return qs
 
 
-class ModerationItemDetailView(DetailView):
+class ModerationItemDetailView(ModelFormMixin, ProcessFormView, DetailView):
     model = models.ModerationItem
+    form_class = forms.ModerateForm
+
+    def get_item_attribute(self, item, field):
+        if isinstance(field, RelatedField):
+            try:
+                return getattr(item, field.name)
+            except field.related_model.DoesNotExist:
+                try:
+                    return models.ModerationItem.objects.get(
+                        content_type=ContentType.objects.get_for_model(field.related_model),
+                        object_id=getattr(item, field.get_attname()),
+                    )
+                except models.ModerationItem.DoesNotExist:
+                    return getattr(item, field.get_attname())
+        else:
+            return getattr(item, field.name)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -91,7 +145,6 @@ class ModerationItemDetailView(DetailView):
         if old_wikidata_item is None:
             old_wikidata_item = obj.content_type.model_class()()
         new_wikidata_item = obj.get_new_wikidata_item()
-        print(old_wikidata_item, new_wikidata_item)
         return {
             **context,
             'model_meta': old_wikidata_item._meta,
@@ -99,8 +152,8 @@ class ModerationItemDetailView(DetailView):
             'new_wikidata_item': new_wikidata_item,
             'fields': [{
                 'field_name': field.name,
-                'old_value': getattr(old_wikidata_item, field.name),
-                'new_value': getattr(new_wikidata_item, field.name),
-                'changed': getattr(old_wikidata_item, field.name) != getattr(new_wikidata_item, field.name),
+                'old_value': self.get_item_attribute(old_wikidata_item, field),
+                'new_value': self.get_item_attribute(new_wikidata_item, field),
+                'changed': getattr(old_wikidata_item, field.get_attname()) != getattr(new_wikidata_item, field.get_attname()),
             } for field in old_wikidata_item._meta.fields],
         }

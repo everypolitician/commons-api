@@ -23,8 +23,9 @@
     <table>
         <thead>
         <tr>
-            <th>Legislature</th>
             <th>Area</th>
+            <th>Legislature</th>
+            <th>District</th>
             <th>Position</th>
             <th>Start</th>
             <th>End</th>
@@ -32,8 +33,9 @@
         </thead>
         <tbody>{% for membership in person.legislativemembership_set.all %}
             <tr>
-                <td>{{ membership.legislative_house.link }}</td>
                 <td>{{ membership.legislative_house.administrative_area }}</td>
+                <td>{{ membership.legislative_house.link }}</td>
+                <td>{{ membership.district }}</td>
                 <td>{{ membership.position }}</td>
                 <td>{{ membership.start|default_if_none:"" }}</td>
                 <td>{{ membership.end|default_if_none:"" }}</td>

@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load i18n %}
+
+{% block title %}{{ electoraldistrict.label }}{% endblock %}
+
+{% block content %}
+    <h1>{{ electoraldistrict.label }}</h1>
+
+    {% include "wikidata/wikimedia_links.html" %}
+
+    <h2>Representation</h2>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Legislature</th>
+            <th>Person</th>
+            <th>Start</th>
+            <th>End</th>
+        </tr>
+        </thead>
+        <tbody>{% for membership in electoraldistrict.legislativemembership_set.all %}
+            <tr>
+                <td>{{ membership.legislative_house.link }}</td>
+                <td>{{ membership.person.link }}</td>
+                <td>{{ membership.start|default_if_none:"" }}</td>
+                <td>{{ membership.end|default_if_none:"" }}</td>
+            </tr>{% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

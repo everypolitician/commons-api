@@ -34,7 +34,8 @@ class TermAdmin(admin.ModelAdmin):
 
 
 class ModerationItemAdmin(admin.ModelAdmin):
-    list_display = ('id',)
+    list_display = ('id', 'content_type', 'creation', 'deletion')
+    list_filter = ('content_type', 'creation', 'deletion')
 
 
 admin.site.register(models.Country, CountryAdmin)
