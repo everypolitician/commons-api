@@ -5,6 +5,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 from django.conf import settings
 from django.template.loader import get_template
 
+from commons_api.wikidata.namespaces import WD
 from commons_api.wikidata.utils import item_uri_to_id, statement_uri_to_id, get_date
 from .. import models
 
@@ -42,6 +43,7 @@ def refresh_legislature_list(country_id):
                        for legislature_id, positions in legislature_positions.items()
                        for position in positions]
     sparql.setQuery(get_template('wikidata/query/legislature_terms_list.rq').render({'house_positions': house_positions}))
+    print(get_template('wikidata/query/legislature_terms_list.rq').render({'house_positions': house_positions}))
     sparql.setReturnFormat(JSON)
     results = sparql.query().convert()
     # print(house_positions)
@@ -59,6 +61,10 @@ def refresh_legislature_list(country_id):
                                                                            result['termLabel']['value'])
         legislative_term.start = get_date(result.get('termStart'))
         legislative_term.end = get_date(result.get('termEnd'))
+        try:
+            legislative_term.series_ordinal = int(result.get('seriesOrdinal'))
+        except (ValueError, TypeError):
+            legislative_term.series_ordinal = None
         legislative_term.save()
         legislative_terms[item_uri_to_id(result['house'])].append(legislative_term)
 
@@ -88,7 +94,10 @@ def refresh_legislature_members(legislature_id):
         person = models.Person.objects.for_id_and_label(item_uri_to_id(first_row['person']),
                                                         first_row['personLabel']['value'])
         person.save()
-        print("{:6} {:10} {}".format(i, item_uri_to_id(first_row['person']), first_row['personLabel']['value']))
+        print("{:6} {:10} {} | {}".format(i,
+                                          item_uri_to_id(first_row['person']),
+                                          first_row['personLabel']['value'],
+                                          first_row.get('group', {}).get('value')))
 
         if 'districtLabel' in first_row:
             district = models.ElectoralDistrict.objects.for_id_and_label(item_uri_to_id(first_row['district']),
@@ -131,6 +140,28 @@ def refresh_legislature_members(legislature_id):
         membership.start = get_date(first_row.get('start'))
         membership.end = get_date(first_row.get('end'))
         membership.position_id = item_uri_to_id(first_row['role'])
+
+        membership.independent = False
+        for name in ('party', 'group'):
+            if first_row.get(name) and item_uri_to_id(first_row[name]) == 'Q327591':
+                del first_row[name]
+                membership.independent = True
+
+        if first_row.get('group'):
+            membership.parliamentary_group = models.Organization.objects.for_id_and_label(item_uri_to_id(first_row['group']),
+                                                                                          first_row['groupLabel']['value'],
+                                                                                          save=True)
+        else:
+            membership.parliamentary_group = None
+
+        if first_row.get('party'):
+            membership.party = models.Organization.objects.for_id_and_label(item_uri_to_id(first_row['party']),
+                                                                            first_row['partyLabel']['value'],
+                                                                            save=True)
+        else:
+            membership.party = membership.parliamentary_group
+
+
         if not membership.start:
             try:
                 membership.start = min(term.start for term in legislative_terms if term.start)

@@ -1,10 +1,6 @@
 {% extends "base.html" %}{% load i18n %}
 
-{% block title %}{{ person.label }}{% endblock %}
-
 {% block content %}
-    <h1>{{ person.label }}</h1>
-    {% include "wikidata/wikimedia_links.html" %}
     <p>
         {% if person.facebook_id %}
             <a href="https://www.facebook.com/{{ person.facebook_id }}">Facebook</a>
@@ -20,7 +16,7 @@
 
     <h2>Legislative memberships</h2>
 
-    <table>
+    <table class="pure-table pure-table-striped">
         <thead>
         <tr>
             <th>Area</th>
@@ -35,8 +31,8 @@
             <tr>
                 <td>{{ membership.legislative_house.administrative_area }}</td>
                 <td>{{ membership.legislative_house.link }}</td>
-                <td>{{ membership.district }}</td>
-                <td>{{ membership.position }}</td>
+                <td>{{ membership.district.link|default_if_none:"" }}</td>
+                <td>{{ membership.position|default_if_none:"" }}</td>
                 <td>{{ membership.start|default_if_none:"" }}</td>
                 <td>{{ membership.end|default_if_none:"" }}</td>
             </tr>{% endfor %}

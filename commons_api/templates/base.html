@@ -2,11 +2,33 @@
 <html lang="{{ LANGUAGE_CODE }}" dir="{{ LANGUAGE_BIDI|yesno:"rtl,ltr" }}">
 <head>
     <meta charset="utf-8">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}{{ title|default:object.label|default:"Democratic Commons" }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ STATIC_URL }}lib/pure/pure-min.css" type="text/css">
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="{{ STATIC_URL }}lib/pure/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="{{ STATIC_URL }}lib/pure/grids-responsive-min.css">
+    <!--<![endif]-->
+    <link rel="stylesheet" href="{{ STATIC_URL }}lib/components-font-awesome/css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/base.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="{{ STATIC_URL}}lib/jquery/dist/jquery.min.js"></script>
+    <!--<link rel="stylesheet" href="{{ STATIC_URL}}lib/bootstrap/dist/css/bootstrap.min.css">-->
+    {% block extra_head %}{% endblock %}
 </head>
+
 <body>
-{% block body %}
-    <div id="content">
+
+<div id="layout">
+    <div id="menu">
+        <img src="{{ STATIC_URL }}brand/ox_brand3_rev_rect.gif" alt="" class="brandmark">
+        <div class="pure-menu">
+            <a class="pure-menu-heading" href="/">{% block site_name %}{{ site_name }}{% endblock %}</a>
+        </div>
+    </div>
+
+    <div id="main">
         {% if messages %}
             <ul class="messages">
                 {% for message in messages %}
@@ -14,25 +36,41 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        {% block content %}
-        {% endblock %}
-    </div>
+        <div id="header">
+            {% block nav %}
+            {% endblock %}
 
-    <hr>
-    <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
-        <input name="next" type="hidden" value="{{ redirect_to }}">
-        <select name="language">
-            {% get_current_language as LANGUAGE_CODE %}
-            {% get_available_languages as LANGUAGES %}
-            {% get_language_info_list for LANGUAGES as languages %}
-            {% for language in languages %}
-                <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
-                    {{ language.name_local }} ({{ language.code }})
-                </option>
-            {% endfor %}
-        </select>
-        <input type="submit" value="Go">
-    </form>
-{% endblock %}
+            {% block header %}<h1>{% block h1_title %}{{ object.label|default:"Hello" }}{% endblock %}</h1>{% endblock %}
+
+    {% include "wikidata/wikimedia_links.html" %}
+            {% block actions %}{% endblock %}
+        </div>
+        {% block content_wrapper %}
+            <div id="content">
+                {% block content %}
+                {% endblock %}
+            </div>
+            <div id="footer">
+
+                <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+                    <input name="next" type="hidden" value="{{ redirect_to }}">
+                    <select name="language">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        {% get_available_languages as LANGUAGES %}
+                        {% get_language_info_list for LANGUAGES as languages %}
+                        {% for language in languages %}
+                            <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+                                {{ language.name_local }} ({{ language.code }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <input type="submit" value="Go">
+                </form>
+            </div>
+        {% endblock %}
+
+    </div>
+</div>
+
 </body>
 </html>

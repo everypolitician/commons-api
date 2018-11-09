@@ -238,6 +238,7 @@ class Position(WikidataItem):
 
 class LegislativeTerm(WikidataItem):
     position = models.ForeignKey(Position, null=True, blank=True, on_delete=models.CASCADE)
+    series_ordinal = models.IntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ('start', 'end')
@@ -267,6 +268,10 @@ class Election(WikidataItem):
     pass
 
 
+class Organization(WikidataItem):
+    pass
+
+
 class Membership(Timebound, Moderateable):
     id = models.CharField(max_length=64, primary_key=True)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
@@ -280,6 +285,11 @@ class LegislativeMembership(Membership):
     legislative_terms = models.ManyToManyField(LegislativeTerm, blank=True)
     district = models.ForeignKey(ElectoralDistrict, null=True, blank=True, on_delete=models.CASCADE)
     position = models.ForeignKey(Position, null=True, blank=True, on_delete=models.CASCADE)
+    parliamentary_group = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE,
+                                            related_name='parliamentary_group_of_legislative_memberships')
+    party = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.CASCADE,
+                              related_name='party_of_legislative_memberships')
+    independent = models.BooleanField(default=False)
     end_cause = models.ForeignKey(Term, null=True, blank=True, on_delete=models.CASCADE,
                                   related_name='end_cause_of_legislative_memberships')
     subject_has_role = models.ForeignKey(Term, null=True, blank=True, on_delete=models.CASCADE,

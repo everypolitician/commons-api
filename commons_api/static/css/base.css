@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css?family=Raleway');
+
+#menu, h1, h2, h3, h4, h5, h6 {
+    font-family: Raleway;
+    font-weight: lighter;
+}
+
+#header, #footer {
+    max-width: 768px;
+    margin: 1em auto;
+    text-align: center;
+}
+
+#actions {
+    text-align: right;
+}
+
+#content {
+    box-sizing: border-box;
+    padding-left: 2em;
+    padding-right: 2em;
+    font-family: sans-serif;
+    margin-bottom: 2em;
+}

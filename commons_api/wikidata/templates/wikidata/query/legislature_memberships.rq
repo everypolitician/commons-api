@@ -1,6 +1,7 @@
 SELECT DISTINCT
        ?statement
        ?person ?personLabel
+       ?group ?groupLabel
        ?party ?partyLabel
        ?district ?districtLabel
        ?role ?roleLabel
@@ -17,7 +18,8 @@ WHERE {
   OPTIONAL { ?statement pq:P580 ?start }
   OPTIONAL { ?statement pq:P582 ?end }
   OPTIONAL { ?statement pq:P768 ?district }
-  OPTIONAL { ?statement pq:P4100 ?party }
+  OPTIONAL { ?statement pq:P4100 ?group }
+  OPTIONAL { ?statement pq:P1268 ?party }
   OPTIONAL { ?statement pq:P1534 ?endCause }
   OPTIONAL { ?statement pq:P2868 ?subjectHasRole }
 

@@ -1,17 +1,25 @@
 {% extends "base.html" %}
 
 {% block title %}Countries{% endblock %}
+{% block h1_title %}Countries{% endblock %}
+{% block actions %}
+    <div id="actions">
+    <form method="post">{% csrf_token %}
+      <input type="submit" name="refresh-country-list" value="Refresh country list" class="pure-button">
+    </form>
+    </div>
+{% endblock %}
 
 {% block content %}
-    <h1>Countries</h1>
 
-    <form method="post">{% csrf_token %}
-      <input type="submit" name="refresh-country-list" value="Refresh country list">
-    </form>
+    <table class="pure-table pure-table-striped">
+    <tbody>
 
-    <ul>
     {% for country in country_list %}
-    <li><a href="{{ country.get_absolute_url }}">{{ country.label }}</a></li>
+    <tr>
+        <td><a href="{{ country.get_absolute_url }}">{{ country.label }}</a></td>
+    </tr>
     {% endfor %}
-    </ul>
+    </tbody>
+    </table>
 {% endblock %}

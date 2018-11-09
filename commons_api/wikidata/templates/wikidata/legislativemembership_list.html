@@ -1,34 +1,48 @@
 {% extends "base.html" %}
 
 {% block title %}{{ legislativehouse.label }} — {% if legislativeterm %}{{ legislativeterm.label }}{% elif current_members %}current membership{% else %}all memberships{% endif %}{% endblock %}
+{% block h1_title %}{{ legislativehouse.link }} — {% if legislativeterm %}{{ legislativeterm.link }}{% elif current_members %}current membership{% else %}all memberships{% endif %}{% endblock %}
 
 {% block content %}
-    <h1>{{ legislativehouse.link }} — {% if legislativeterm %}{{ legislativeterm.link }}{% elif current_members %}current membership{% else %}all memberships{% endif %}</h1>
-    {% include "wikidata/wikimedia_links.html" %}
-    <table>
-        <thead>
-        <tr>
-            <th>No.</th>
-            <th>Person</th>
-            <th>Sex or gender</th>
-            <th>District</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>End cause</th>
-        </tr>
-        </thead>
-        <tbody>{% for membership in legislativemembership_list %}
+    {% if legislativemembership_list %}
+        <table class="pure-table pure-table-striped">
+            <thead>
             <tr>
-                <th>{{ forloop.counter }}</th>
-                <td>{{ membership.person.link }}</td>
-                <td>{{ membership.person.sex_or_gender|default_if_none:"" }}</td>
-                <td>{{ membership.district.link|default_if_none:"" }}</td>
-                <td>{{ membership.start|default_if_none:"" }}</td>
-                <td>{{ membership.end|default_if_none:"" }}</td>
-                <td>{{ membership.end_cause|default_if_none:"" }}</td>
-            </tr>{% endfor %}
+                <th>No.</th>
+                <th>Person</th>
+                <th>Sex or gender</th>
+                <th>Group</th>
+                <th>District</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>End cause</th>
+            </tr>
+            </thead>
+            <tbody>{% for membership in legislativemembership_list %}
+                <tr>
+                    <th>{{ forloop.counter }}</th>
+                    <td>{{ membership.person.link }}</td>
+                    <td>{{ membership.person.sex_or_gender|default_if_none:"" }}</td>
+                    <td>
+                        {{ membership.parliamentary_group|default:"" }}
+                        {% if membership.parliamentary_group != membership.party %}
+                            {% if membership.parliamentary_group %}
+                                ({{ membership.party }})
+                            {% elif membership.independent %}
+                                <em>independent</em>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td>{{ membership.district.link|default_if_none:"" }}</td>
+                    <td>{{ membership.start|default_if_none:"" }}</td>
+                    <td>{{ membership.end|default_if_none:"" }}</td>
+                    <td>{{ membership.end_cause|default_if_none:"" }}</td>
+                </tr>{% endfor %}
 
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    {% else %}
+        <p>There are no current memberships. Try refreshing.</p>
+    {% endif %}
 
 {% endblock %}

@@ -21,8 +21,8 @@ class LegislativeTermAdmin(admin.ModelAdmin):
 
 
 class LegislativeMembershipAdmin(admin.ModelAdmin):
-    list_display = ('id', 'person', 'legislative_house', 'district', 'start', 'end')
-    list_filter = ('end_cause', 'subject_has_role')
+    list_display = ('id', 'person', 'legislative_house', 'district', 'parliamentary_group', 'start', 'end')
+    list_filter = ('end_cause', 'subject_has_role', 'parliamentary_group')
 
 
 class PersonAdmin(admin.ModelAdmin):
@@ -38,6 +38,10 @@ class ModerationItemAdmin(admin.ModelAdmin):
     list_filter = ('content_type', 'creation', 'deletion')
 
 
+class OrganizationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'label')
+
+
 admin.site.register(models.Country, CountryAdmin)
 admin.site.register(models.LegislativeHouse, LegislativeHouseAdmin)
 admin.site.register(models.AdministrativeArea, AdministrativeAreaAdmin)
@@ -46,3 +50,4 @@ admin.site.register(models.LegislativeMembership, LegislativeMembershipAdmin)
 admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Term, TermAdmin)
 admin.site.register(models.ModerationItem, ModerationItemAdmin)
+admin.site.register(models.Organization, OrganizationAdmin)

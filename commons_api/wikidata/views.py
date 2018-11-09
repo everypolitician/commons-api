@@ -107,7 +107,8 @@ class LegislativeMembershipListView(ListView):
         return context
 
     def get_queryset(self):
-        qs = super().get_queryset().filter(legislative_house_id=self.kwargs['legislativehouse_pk'])
+        qs = super().get_queryset().filter(legislative_house_id=self.kwargs['legislativehouse_pk']) \
+            .select_related('parliamentary_group', 'party', 'district')
         if not self.all_members:
             qs = qs.filter(start__isnull=False)
         if self.current_members or self.legislative_term:

@@ -1,15 +1,17 @@
 {% extends "base.html" %}{% load humanize %}
 
 {% block title %}{{ country.label }}{% endblock %}
-
-{% block content %}
-    <h1>{{ country.label }}</h1>
-
-    {% include "wikidata/wikimedia_links.html" %}
-
+{% block h1_title %}{{ country.label }}{% endblock %}
+{% block actions %}
+    <div id="actions">
     <form method="post">{% csrf_token %}
       <input type="submit" name="refresh-legislature-list" value="Refresh legislature list">
     </form>
+    </div>
+{% endblock %}
+
+{% block content %}
+
 
     {% if country.population %}
     <p>Population: {{ country.population|intcomma }}</p>
@@ -20,7 +22,7 @@
     {% endif %}
 
     <h2>Legislatures</h2>
-    <table>
+    <table class="pure-table pure-table-striped">
     <thead>
     <tr>
         <th>House</th>

@@ -1,15 +1,14 @@
 {% extends "base.html" %}{% load i18n %}
 
-{% block title %}{{ legislativehouse.label }}{% endblock %}
-
-{% block content %}
-    <h1>{{ legislativehouse.label }}</h1>
-    {% include "wikidata/wikimedia_links.html" %}
-
+{% block actions %}
+<div id="actions">
     <form method="post">{% csrf_token %}
       <input type="submit" name="refresh-legislature-members" value="Refresh legislature members">
     </form>
+</div>
+{% endblock %}
 
+{% block content %}
     <p>
         {% if legislativehouse.country_id != legislativehouse.administrative_area_id %}
             {% blocktrans with administrative_area=legislativehouse.administrative_area country_url=legislativehouse.country.get_absolute_url country=legislativehouse.country %}Legislative house of {{ administrative_area }} in <a href="{{ country_url }}">{{ country }}</a>.{% endblocktrans %}
@@ -18,11 +17,14 @@
         {% endif %}
     </p>
 
-    <p><a href="{% url "wikidata:legislativemembership-list-current" legislativehouse_pk=legislativehouse.id %}">Current membership</a></p>
+    <p>
+        <a href="{% url "wikidata:legislativemembership-list-current" legislativehouse_pk=legislativehouse.id %}">Current membership</a>
+        <a href="{% url "wikidata:legislativemembership-list-all" legislativehouse_pk=legislativehouse.id %}">All memberships</a>
+    </p>
 
     {% if legislativehouse.legislative_terms.count %}
         <h2>Legislative terms</h2>
-        <table>
+        <table class="pure-table pure-table-striped">
             <thead>
             <tr>
                 <th>Ordinal</th>
@@ -33,7 +35,7 @@
             </thead>
             <tbody>{% for term in legislativehouse.legislative_terms.all %}
                 <tr>
-                    <td></td>
+                    <td>{{ term.series_ordinal|default_if_none:"" }}</td>
                     <td><a href="{% url "wikidata:legislativemembership-list" legislativehouse_pk=legislativehouse.id legislativeterm_pk=term.id %}">{{ term }}</a></td>
                     <td>{{ term.start|default_if_none:"" }}</td>
                     <td>{{ term.end|default_if_none:"" }}</td>
