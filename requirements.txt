@@ -5,6 +5,7 @@ django-heroku
 django-reversion
 djangorestframework
 flower
+gunicorn
 psycopg2
 rdflib
 sparqlwrapper
