@@ -3,6 +3,7 @@
 import dirtyfields.dirtyfields
 import django.contrib.postgres.fields.hstore
 import django.contrib.postgres.fields.jsonb
+from django.contrib.postgres.operations import HStoreExtension
 import django.core.serializers.json
 from django.db import migrations, models
 import django.db.models.deletion
@@ -17,6 +18,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        HStoreExtension(),
         migrations.CreateModel(
             name='AdministrativeArea',
             fields=[
