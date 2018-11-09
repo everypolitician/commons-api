@@ -88,3 +88,5 @@ if 'DYNO' in os.environ:
     # Configure Django App for Heroku.
     import django_heroku
     django_heroku.settings(locals())
+
+    CELERY_BROKER_URL = os.environ.get('CLOUDAMQP_URL')
