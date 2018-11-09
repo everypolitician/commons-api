@@ -10,7 +10,7 @@ TIME_ZONE = 'Europe/London'
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split() if not DEBUG else ['*']
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '')
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
 if not SECRET_KEY and DEBUG:
     SECRET_KEY = 'very secret key'
 

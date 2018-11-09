@@ -1,2 +1,2 @@
-web: gunicorn commons_api/wsgi.py
+web: gunicorn commons_api.wsgi:application
 worker: celery -A commons_api worker
