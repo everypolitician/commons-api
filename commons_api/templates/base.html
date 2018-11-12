@@ -22,9 +22,11 @@
 
 <div id="layout">
     <div id="menu">
-        <img src="{{ STATIC_URL }}brand/ox_brand3_rev_rect.gif" alt="" class="brandmark">
-        <div class="pure-menu">
-            <a class="pure-menu-heading" href="/">{% block site_name %}{{ site_name }}{% endblock %}</a>
+        <div class="pure-menu pure-menu-horizontal">
+            <a class="pure-menu-heading" href="/">Democratic Commons <em>demo</em></a>
+<ul class="pure-menu-list">
+        <li class="pure-menu-item"><a href="{% url "wikidata:country-list" %}" class="pure-menu-link">Countries</a></li>
+     </ul>
         </div>
     </div>
 
@@ -36,25 +38,24 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <div id="header">
-            {% block nav %}
-            {% endblock %}
-
-            {% block header %}<h1>{% block h1_title %}{{ object.label|default:"Hello" }}{% endblock %}</h1>{% endblock %}
-
-    {% include "wikidata/wikimedia_links.html" %}
-            {% block actions %}{% endblock %}
-        </div>
         {% block content_wrapper %}
             <div id="content">
+                {% block content_header %}
+
+
+                    {% block header %}<h1>{% block h1_title %}{{ object.label|default:"Hello" }}{% endblock %}</h1>{% endblock %}
+
+                    {% include "wikidata/wikimedia_links.html" %}
+                    {% block actions %}{% endblock %}
+                {% endblock %}
                 {% block content %}
                 {% endblock %}
             </div>
             <div id="footer">
-
-                <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+                <form action="{% url 'set_language' %}" method="post" class="pure-form">{% csrf_token %}
                     <input name="next" type="hidden" value="{{ redirect_to }}">
-                    <select name="language">
+                    <label for="select-language">Change language:</label>
+                    <select id="select-language" name="language">
                         {% get_current_language as LANGUAGE_CODE %}
                         {% get_available_languages as LANGUAGES %}
                         {% get_language_info_list for LANGUAGES as languages %}
@@ -64,8 +65,26 @@
                             </option>
                         {% endfor %}
                     </select>
-                    <input type="submit" value="Go">
+                    <input type="submit" value="Go" class="pure-button">
                 </form>
+                <hr class="mysoc-footer__divider" role="presentation">
+                <div class="pure-g">
+                    <div class="pure-u-1-4"></div>
+                    <div class="pure-u-1-4">
+                        <div class="mysoc-footer__orgs">
+                            <p class="mysoc-footer__org">
+                                Built by
+                                <a href="https://mysociety.org/" class="mysoc-footer-logo">mySociety</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="pure-u-1-4">
+                        <div class="mysoc-footer__legal">
+                            <p>mySociety is a project of UK Citizens Online Democracy, a registered charity in England and Wales. For full details visit <a href="https://www.mysociety.org?utm_source=whatdotheyknow.com&utm_content=footer+full+legal+details&utm_medium=link&utm_campaign=mysoc_footer">mysociety.org</a>.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         {% endblock %}
 

@@ -1,3 +1,22 @@
 {% extends "base.html" %}
 
-{% block h1_title %}Democratic Commons{% endblock %}
+{% block title %}Explore the Democratic Commons{% endblock %}
+{% block h1_title %}Explore the Democratic Commons{% endblock %}
+
+{% block content %}
+    <h2>Exposing political data from Wikidata</h2>
+    <p>This site demonstrates data about politicians and political representation around the world as modelled by
+        <a href="https://wikidata.org/">Wikidata</a> using the
+        <a href="https://www.wikidata.org/wiki/Wikidata:WikiProject_every_politician/Political_data_model">EveryPolitician
+            data model</a>. It was produced in pursuit of
+        <a href=https://www.mysociety.org/democracy/democratic-commons/">the Democratic Commons</a>.</p>
+
+    <h2>What's in here</h2>
+    <p>At the moment, information about legislatures, constituencies, legislators and party affiliations, both current and historical.</p>
+    <h2>A work in progress</h2>
+    <p>This site is still under development, and there's a lot still to do. </p>
+    <h2>What next?</h2>
+<p><a href="mailto:democracy@mysociety.org">Talk to us!</a></p>
+
+    <a href="{% url "wikidata:country-list" %}" class="pure-button pure-button-primary button-start-exploring">Start exploring…</a>
+{% endblock %}

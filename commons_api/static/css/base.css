@@ -3,16 +3,46 @@
 #menu, h1, h2, h3, h4, h5, h6 {
     font-family: Raleway;
     font-weight: lighter;
+    margin-top: 0;
 }
 
-#header, #footer {
-    max-width: 768px;
+.pure-menu {
+    margin-top: 0;
+}
+
+#header, #footer, #menu {
     margin: 1em auto;
-    text-align: center;
+    background-color: #333;
+    color: #fff;
+}
+
+#header a, #footer a, #menu a {
+    color: #fff;
+}
+
+#content {
+    margin-top: 0;
+    padding-top: 2em;
+    background-color: #f3f1eb;
+}
+
+#menu {
+
+    margin: 0;
+}
+
+#header {
+    margin-top: 0;
+}
+
+#footer {
+    margin-bottom: 0;
+    margin-top: 0;
+    padding: 1em;
 }
 
 #actions {
-    text-align: right;
+    margin: 1em;
 }
 
 #content {
@@ -20,5 +50,31 @@
     padding-left: 2em;
     padding-right: 2em;
     font-family: sans-serif;
-    margin-bottom: 2em;
+    padding-bottom: 2em;
+}
+
+.pure-table {
+    background-color: #fff;
+    margin: 1em 0;
+}
+
+.button-start-exploring {
+    font-size: 150%;
+    width: 10em;
+            border-radius: 4px;
+}
+
+select, input {
+    color: #000;
+}
+
+.mysoc-footer-logo {
+    background: url('../img/mysoc-footer-logo.png');
+    background-position: center center;
+    background-size: 152px 32px;
+    background-repeat: no-repeat;
+    display: block;
+    width: 152px;
+    height: 32px;
+    text-indent: -9999px;
 }
