@@ -1,6 +1,7 @@
 from django import apps
 from django.db.models.signals import post_save
 
+
 class CountryConfig(apps.AppConfig):
     name = 'commons_api.wikidata'
 
