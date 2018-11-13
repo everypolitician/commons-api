@@ -1,0 +1,6 @@
+SELECT ?id ?label WHERE {
+  VALUES ?id { {% for id in ids %}
+    wd:{{ id }}{% endfor %}
+  }
+  ?id rdfs:label ?label .
+} ORDER BY ?id
