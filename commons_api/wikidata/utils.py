@@ -1,7 +1,9 @@
 from typing import Mapping
 
 import re
+from SPARQLWrapper import SPARQLWrapper, JSON
 from django.conf import settings
+from django.template.loader import get_template
 from django.utils import translation
 
 from . import models
@@ -35,7 +37,6 @@ def get_date(dt):
         return dt
 
 
-
 def statement_uri_to_id(uri):
     if isinstance(uri, dict):
         uri = uri['value']
@@ -60,3 +61,10 @@ def select_multilingual(data: Mapping[str,object],
         except KeyError:
             continue
     return default
+
+
+def templated_wikidata_query(query_name, context):
+    sparql = SPARQLWrapper(settings.WDQS_URL)
+    sparql.setQuery(get_template(query_name).render(context))
+    sparql.setReturnFormat(JSON)
+    return sparql.query().convert()

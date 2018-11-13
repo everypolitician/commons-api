@@ -6,17 +6,14 @@ from django.conf import settings
 from django.template.loader import get_template
 
 from commons_api.wikidata.namespaces import WD
-from commons_api.wikidata.utils import item_uri_to_id, statement_uri_to_id, get_date
+from commons_api.wikidata.utils import item_uri_to_id, statement_uri_to_id, get_date, templated_wikidata_query
 from .. import models
 
 
 @celery.shared_task
 def refresh_legislature_list(country_id):
     country = models.Country.objects.get(id=country_id)
-    sparql = SPARQLWrapper(settings.WDQS_URL)
-    sparql.setQuery(get_template('wikidata/query/legislature_list.rq').render({'country': country}))
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
+    results = templated_wikidata_query('wikidata/query/legislature_list.rq', {'country': country})
     # print(get_template('wikidata/query/legislature_list.rq').render())
     # print(len(results['results']['bindings']))
     legislature_positions = collections.defaultdict(list)
@@ -42,13 +39,9 @@ def refresh_legislature_list(country_id):
     house_positions = [{'house': legislature_id, 'position': position.id}
                        for legislature_id, positions in legislature_positions.items()
                        for position in positions]
-    sparql.setQuery(get_template('wikidata/query/legislature_terms_list.rq').render({'house_positions': house_positions}))
-    print(get_template('wikidata/query/legislature_terms_list.rq').render({'house_positions': house_positions}))
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    # print(house_positions)
-    # print(get_template('wikidata/query/legislature_terms_list.rq').render())
-    # print(len(results['results']['bindings']))
+
+    results = templated_wikidata_query('wikidata/query/legislature_terms_list.rq',
+                                       {'house_positions': house_positions})
     for result in results['results']['bindings']:
         if 'termSpecificPositionLabel' in result:
             term_specific_position = models.Position.objects.for_id_and_label(
@@ -80,13 +73,12 @@ def refresh_legislature_list(country_id):
 @celery.shared_task
 def refresh_legislature_members(legislature_id):
     house = models.LegislativeHouse.objects.get(id=legislature_id)
-    sparql = SPARQLWrapper(settings.WDQS_URL)
-    sparql.setQuery(get_template('wikidata/query/legislature_memberships.rq').render({'positions': house.positions.all()}))
-    sparql.setReturnFormat(JSON)
-    results = sparql.query().convert()
-    print(get_template('wikidata/query/legislature_memberships.rq').render({'positions': house.positions.all()}))
+
+    results = templated_wikidata_query('wikidata/query/legislature_memberships.rq',
+                                       {'positions': house.positions.all()})
     seen_statement_ids = set()
-    for i, (statement, rows) in enumerate(itertools.groupby(results['results']['bindings'], key=lambda row: row['statement']['value'])):
+    for i, (statement, rows) in enumerate(itertools.groupby(results['results']['bindings'],
+                                                            key=lambda row: row['statement']['value'])):
         rows = list(rows)
         statement_id = statement_uri_to_id(statement)
         seen_statement_ids.add(statement_id)
