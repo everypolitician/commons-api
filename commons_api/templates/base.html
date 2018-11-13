@@ -54,7 +54,7 @@
             <div id="footer">
                 <form action="{% url 'set_language' %}" method="post" class="pure-form">{% csrf_token %}
                     <input name="next" type="hidden" value="{{ redirect_to }}">
-                    <label for="select-language">Change language:</label>
+                    <label for="select-language">{% trans "Change language:" %}</label>
                     <select id="select-language" name="language">
                         {% get_current_language as LANGUAGE_CODE %}
                         {% get_available_languages as LANGUAGES %}
@@ -65,7 +65,7 @@
                             </option>
                         {% endfor %}
                     </select>
-                    <input type="submit" value="Go" class="pure-button">
+                    <input type="submit" value="{% trans "Go" %}" class="pure-button">
                 </form>
                 <hr class="mysoc-footer__divider" role="presentation">
                 <div class="pure-g">
@@ -73,7 +73,7 @@
                     <div class="pure-u-1-4">
                         <div class="mysoc-footer__orgs">
                             <p class="mysoc-footer__org">
-                                Built by
+                                {% blocktrans %}Built by{% endblocktrans %}
                                 <a href="https://mysociety.org/" class="mysoc-footer-logo">mySociety</a>
                             </p>
                         </div>

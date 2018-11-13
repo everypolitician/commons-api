@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 12:46+0100\n"
+"POT-Creation-Date: 2018-11-13 09:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,11 +18,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: commons_api/wikidata/models.py:67
+#: commons_api/templates/base.html:57
+msgid "Change language:"
+msgstr "Cambiar idioma:"
+
+#: commons_api/templates/base.html:68
+msgid "Go"
+msgstr "Ir"
+
+#: commons_api/templates/base.html:76
+msgid "Built by"
+msgstr "Construido por"
+
+#: commons_api/templates/index.html:3 commons_api/templates/index.html:4
+msgid "Explore the Democratic Commons"
+msgstr "Explora el Democratic Commons"
+
+#: commons_api/templates/index.html:19
+msgid "Talk to us!"
+msgstr "¡Háblanos!"
+
+#: commons_api/wikidata/forms.py:8
+msgid "Accept"
+msgstr ""
+
+#: commons_api/wikidata/forms.py:9
+msgid "Reject"
+msgstr ""
+
+#: commons_api/wikidata/models.py:133
 msgid "[no label]"
 msgstr "[sin etiqueta]"
 
-#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:11
+#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:14
 #, python-format
 msgid ""
 "Legislative house of %(administrative_area)s in <a href=\"%(country_url)s\">"
@@ -31,12 +59,16 @@ msgstr ""
 "Casa legislativa de %(administrative_area)s en <a href=\"%(country_url)s\">"
 "%(country)s</a>."
 
-#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:13
+#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:16
 #, python-format
 msgid "Legislative house of <a href=\"%(country_url)s\">%(country)s</a>."
 msgstr "Casa legislativa de <a href=\"%(country_url)s\">%(country)s</a>."
 
-#: commons_api/wikidata/templates/wikidata/legislativeterm_detail.html:8
+#: commons_api/wikidata/templates/wikidata/legislativeterm_detail.html:13
+msgid "Term has no inception or dissolution date."
+msgstr ""
+
+#: commons_api/wikidata/templates/wikidata/legislativeterm_detail.html:16
 #, python-format
 msgid "This is a legislative term of one house:"
 msgid_plural "This is a legislative term of %(counter)s houses:"

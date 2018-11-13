@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-03 12:28+0100\n"
+"POT-Creation-Date: 2018-11-13 09:06+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,11 +19,55 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
-#: commons_api/wikidata/models.py:67
+#: commons_api/templates/base.html:57
+msgid "Change language:"
+msgstr "غير اللغة:"
+
+#: commons_api/templates/base.html:68
+msgid "Go"
+msgstr "اذهب"
+
+#: commons_api/templates/base.html:76
+msgid "Built by"
+msgstr "بنيت من قبل"
+
+#: commons_api/templates/index.html:3 commons_api/templates/index.html:4
+msgid "Explore the Democratic Commons"
+msgstr ""
+
+#: commons_api/templates/index.html:19
+msgid "Talk to us!"
+msgstr "تكلم معنا!"
+
+#: commons_api/wikidata/forms.py:8
+msgid "Accept"
+msgstr ""
+
+#: commons_api/wikidata/forms.py:9
+msgid "Reject"
+msgstr ""
+
+#: commons_api/wikidata/models.py:133
 msgid "[no label]"
 msgstr "[بدون تسمية]"
 
-#: commons_api/wikidata/templates/wikidata/legislativeterm_detail.html:8
+#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:14
+#, python-format
+msgid ""
+"Legislative house of %(administrative_area)s in <a href=\"%(country_url)s\">"
+"%(country)s</a>."
+msgstr ""
+
+#: commons_api/wikidata/templates/wikidata/legislativehouse_detail.html:16
+#, python-format
+msgid "Legislative house of <a href=\"%(country_url)s\">%(country)s</a>."
+msgstr ""
+
+#: commons_api/wikidata/templates/wikidata/legislativeterm_detail.html:13
+msgid "Term has no inception or dissolution date."
+msgstr ""
+
+#: commons_api/wikidata/templates/wikidata/legislativeterm_detail.html:16
 #, python-format
 msgid "This is a legislative term of one house:"
 msgid_plural "This is a legislative term of %(counter)s houses:"
