@@ -1,6 +1,4 @@
 SELECT ?id ?label WHERE {
-  VALUES ?id { {% for id in ids %}
-    wd:{{ id }}{% endfor %}
-  }
+  {% include "wikidata/query/id_values.rq" %}
   ?id rdfs:label ?label .
 } ORDER BY ?id

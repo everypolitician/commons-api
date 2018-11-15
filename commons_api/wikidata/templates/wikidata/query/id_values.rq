@@ -1,0 +1,3 @@
+  VALUES ?id { {% for id in ids %}
+    wd:{{ id }}{% endfor %}
+  }
