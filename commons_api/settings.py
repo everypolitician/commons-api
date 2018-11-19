@@ -1,4 +1,5 @@
 import os
+import re
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,7 +17,7 @@ if not SECRET_KEY and DEBUG:
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('DATABASE_NAME', 'commons-api'),
     },
 }
@@ -87,6 +88,9 @@ REST_FRAMEWORK = {
 }
 
 if 'DYNO' in os.environ:
+    # django_heroku uses dj_database_url, so tell it we're using PostGIS
+    os.environ['DATABASE_URL'] = re.sub('^postgres:', 'postgis:', os.environ['DATABASE_URL'])
+
     # Configure Django App for Heroku.
     import django_heroku
     django_heroku.settings(locals())
