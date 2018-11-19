@@ -8,9 +8,10 @@ class CountryConfig(apps.AppConfig):
     def ready(self):
         from commons_api.wikidata import models
 
-        #post_save.connect(self.refresh_from_entity_data_when_created)
-        post_save.connect(self.refresh_legislatures_when_country_created, sender=models.Country)
-        post_save.connect(self.refresh_memberships_when_legislature_created, sender=models.LegislativeHouse)
+        post_save.connect(self.refresh_legislatures_when_country_created,
+                          sender=models.Country)
+        post_save.connect(self.refresh_when_legislature_created,
+                          sender=models.LegislativeHouse)
 
     def refresh_from_entity_data_when_created(self, sender, instance, created, **kwargs):
         from commons_api.wikidata import models
@@ -27,8 +28,12 @@ class CountryConfig(apps.AppConfig):
         if created:
             refresh_legislature_list.delay(instance.id)
 
-    def refresh_memberships_when_legislature_created(self, instance, created, **kwargs):
-        from commons_api.wikidata.tasks import refresh_legislature_members
+    def refresh_when_legislature_created(self, instance, created, **kwargs):
+        from commons_api.wikidata.tasks import (
+            refresh_legislature_members,
+            refresh_legislature_districts,
+        )
 
         if created:
             refresh_legislature_members.delay(instance.id)
+            refresh_legislature_districts.delay(instance.id)
