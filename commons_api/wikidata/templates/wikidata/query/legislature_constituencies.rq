@@ -1,0 +1,14 @@
+SELECT ?constituency ?constituencyLabel ?start ?end {
+  ?constituencyType wdt:P279* ?constituencySupertype .
+  ?constituencySupertype p:P279 ?constituencyTypeSubclassOfStatement .
+  ?constituencyTypeSubclassOfStatement ps:P279/wdt:P279* wd:Q192611 ;
+                                       pq:P642 wd:{{ house.id }} .
+  ?constituency wdt:P31 ?constituencyType .
+  OPTIONAL {
+    ?constituency wdt:P571 ?start .
+  }
+  OPTIONAL {
+    ?constituency wdt:P576 ?end .
+  }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+}
