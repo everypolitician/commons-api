@@ -1,3 +1,9 @@
+__all__ = [
+    'refresh_legislature_list',
+    'refresh_legislature_members',
+    'refresh_legislature_districts',
+]
+
 import celery
 import collections
 import itertools
@@ -168,3 +174,19 @@ def refresh_legislature_members(legislature_id):
         membership.legislative_terms.set(legislative_terms)
 
     models.LegislativeMembership.objects.filter(legislative_house=house).exclude(id__in=seen_statement_ids).delete()
+
+
+@celery.shared_task
+def refresh_legislature_districts(legislature_id):
+    house = models.LegislativeHouse.objects.get(id=legislature_id)
+
+    results = templated_wikidata_query('wikidata/query/legislature_constituencies.rq',
+                                       {'house': house})
+
+    for result in results['results']['bindings']:
+        electoral_district = models.ElectoralDistrict.objects.for_id_and_label(item_uri_to_id(result['constituency']),
+                                                                               result['constituencyLabel']['value'])
+        electoral_district.start = get_date(result.get('start'))
+        electoral_district.end = get_date(result.get('end'))
+        electoral_district.legislative_house = house
+        electoral_district.save()
