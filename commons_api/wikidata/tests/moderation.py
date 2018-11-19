@@ -69,3 +69,13 @@ class ModerationTestCase(TestCase):
         moderation_item.apply()
         self.assertEqual(0, models.Term.objects.count())
         self.assertEqual(0, models.ModerationItem.objects.count())
+
+    def test_only_changing_relationships(self):
+        term = models.Term(id='Q1', labels={'en': 'term'})
+        term.save(moderated=True)
+        person = models.Person(id='Q2', labels={'en': 'person'})
+        person.save(moderated=True)
+        self.assertEqual(0, models.ModerationItem.objects.count())
+        person.sex_or_gender = term
+        person.save()
+        self.assertEqual(1, models.ModerationItem.objects.count())

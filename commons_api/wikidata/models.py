@@ -65,9 +65,10 @@ class Moderateable(DirtyFieldsMixin, models.Model):
         if not settings.ENABLE_MODERATION:
             return super().save(*args, **kwargs)
         ct = ContentType.objects.get_for_model(self)
-        if not self.is_dirty():
+        is_dirty = self.is_dirty(check_relationship=True)
+        if not is_dirty:
             ModerationItem.objects.filter(content_type=ct, object_id=self.id).delete()
-        elif not moderated and self.is_dirty():
+        elif not moderated and is_dirty:
             try:
                 moderation_item = ModerationItem.objects.get(content_type=ct, object_id=self.id)
             except ModerationItem.DoesNotExist:
