@@ -42,6 +42,11 @@ class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('id', 'label')
 
 
+class ElectoralDistrictAdmin(admin.ModelAdmin):
+    list_display = ('id', 'label', 'legislative_house')
+    list_filter = ('legislative_house',)
+
+
 admin.site.register(models.Country, CountryAdmin)
 admin.site.register(models.LegislativeHouse, LegislativeHouseAdmin)
 admin.site.register(models.AdministrativeArea, AdministrativeAreaAdmin)
@@ -51,3 +56,4 @@ admin.site.register(models.Person, PersonAdmin)
 admin.site.register(models.Term, TermAdmin)
 admin.site.register(models.ModerationItem, ModerationItemAdmin)
 admin.site.register(models.Organization, OrganizationAdmin)
+admin.site.register(models.ElectoralDistrict, ElectoralDistrictAdmin)
