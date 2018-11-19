@@ -88,6 +88,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 1000
 }
 
+DEMOCRATIC_COMMONS_GITHUB_USER = os.environ.get('DEMOCRATIC_COMMONS_GITHUB_USER', 'everypolitician')
+
 if 'DYNO' in os.environ:
     # django_heroku uses dj_database_url, so tell it we're using PostGIS
     os.environ['DATABASE_URL'] = re.sub('^postgres:', 'postgis:', os.environ['DATABASE_URL'])
