@@ -96,7 +96,7 @@ class Moderateable(DirtyFieldsMixin, models.Model):
                 moderation_item = ModerationItem.objects.get(content_type=ct, object_id=self.id)
             except ModerationItem.DoesNotExist:
                 moderation_item = ModerationItem(content_type=ct, object_id=self.id)
-            moderation_item.data = None
+            moderation_item.data = {}
             moderation_item.deletion = True
             moderation_item.save()
         elif moderated:
