@@ -79,6 +79,8 @@ STATIC_URL = '/static/'
 
 WDQS_URL = 'https://query.wikidata.org/sparql'
 
+ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION'))
+
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 1000

@@ -62,7 +62,8 @@ class ModerationItem(models.Model):
 
 class Moderateable(DirtyFieldsMixin, models.Model):
     def save(self, *args, moderated=False, **kwargs):
-        moderated = True
+        if not settings.ENABLE_MODERATION:
+            return super().save(*args, **kwargs)
         ct = ContentType.objects.get_for_model(self)
         if not self.is_dirty():
             ModerationItem.objects.filter(content_type=ct, object_id=self.id).delete()
@@ -87,6 +88,8 @@ class Moderateable(DirtyFieldsMixin, models.Model):
             ModerationItem.objects.filter(content_type=ct, object_id=self.id).delete()
 
     def delete(self, using=None, keep_parents=False, moderated=False):
+        if not settings.ENABLE_MODERATION:
+            return super().delete(using=using, keep_parents=keep_parents)
         ct = ContentType.objects.get_for_model(self)
         if not moderated:
             try:
