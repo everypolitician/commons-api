@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.postgres.fields import HStoreField, JSONField
 from django.urls import reverse
@@ -194,6 +195,9 @@ class Term(WikidataItem):
 class Country(WikidataItem):
     flag_image = models.URLField(null=True, blank=True)
     population = models.IntegerField(null=True, blank=True)
+    iso_3166_1_code = models.CharField(max_length=2, null=True, blank=True,
+                                       help_text='Uppercase ISO 3166-1 country code',
+                                       validators=[RegexValidator(r'^[A-Z]{2}$')])
 
     class Meta:
         verbose_name_plural = 'countries'

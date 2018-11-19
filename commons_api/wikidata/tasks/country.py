@@ -20,6 +20,7 @@ def refresh_country_list():
     for result in results['results']['bindings']:
         id = item_uri_to_id(result['item'])
         country = models.Country.objects.for_id_and_label(id, str(result['itemLabel']['value']))
+        country.iso_3166_1_code = result['itemCode']['value'].upper() if result.get('itemCode') else None
         country.save()
         seen_ids.add(id)
     for country in models.Country.objects.exclude(id__in=seen_ids):
