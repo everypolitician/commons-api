@@ -38,7 +38,8 @@ class CountryDetailView(DetailView):
         self.object = self.get_object()
         if 'refresh-legislature-list' in request.POST:
             tasks.refresh_legislature_list.delay(self.object.id)
-            messages.info(request, "Legislature list for {} will be refreshed".format(self.object))
+            messages.info(request, "Legislature list for {} will "
+                                   "be refreshed".format(self.object))
         return redirect(self.object.get_absolute_url())
 
 
@@ -49,7 +50,12 @@ class LegislativeHouseDetailView(DetailView):
         self.object = self.get_object()
         if 'refresh-legislature-members' in request.POST:
             tasks.refresh_legislature_members.delay(self.object.id)
-            messages.info(request, "Legislature membership for {} will be refreshed".format(self.object))
+            messages.info(request, "Legislature membership for {} "
+                                   "will be refreshed".format(self.object))
+        if 'refresh-legislature-districts' in request.POST:
+            tasks.refresh_legislature_districts.delay(self.object.id)
+            messages.info(request, "Legislature districts for {} "
+                                   "will be refreshed".format(self.object))
         return redirect(self.object.get_absolute_url())
 
 
