@@ -232,10 +232,6 @@ class AdministrativeArea(WikidataItem):
     pass
 
 
-class ElectoralDistrict(WikidataItem):
-    pass
-
-
 class Position(WikidataItem):
     pass
 
@@ -253,6 +249,12 @@ class LegislativeHouse(WikidataItem):
     administrative_area = models.ForeignKey(AdministrativeArea, on_delete=models.CASCADE)
     positions = models.ManyToManyField(Position)
     legislative_terms = models.ManyToManyField(LegislativeTerm, through='LegislativeHouseTerm')
+
+
+class ElectoralDistrict(WikidataItem):
+    legislative_house = models.ForeignKey(LegislativeHouse,
+                                          blank=True, null=True,
+                                          on_delete=models.CASCADE)
 
 
 class LegislativeHouseTerm(Moderateable, models.Model):
