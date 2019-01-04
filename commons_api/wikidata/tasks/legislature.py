@@ -120,10 +120,8 @@ def refresh_legislature_members(legislature_id):
         for row in rows:
             if 'termLabel' in row:
                 legislative_term = models.LegislativeTerm.objects.for_id_and_label(item_uri_to_id(row['term']),
-                                                                                   row['termLabel']['value'])
-                legislative_term.start = get_date(row.get('termStart'))
-                legislative_term.end = get_date(row.get('termEnd'))
-                legislative_term.save()
+                                                                                   row['termLabel']['value'],
+                                                                                   save=True)
                 legislative_terms.append(legislative_term)
 
         try:
