@@ -19,8 +19,8 @@
     </p>
 
     <p>
-        <a href="{% url "wikidata:legislativemembership-list-current" legislativehouse_pk=legislativehouse.id %}">Current membership</a>
-        <a href="{% url "wikidata:legislativemembership-list-all" legislativehouse_pk=legislativehouse.id %}">All memberships</a>
+        <a href="{% url "wikidata:legislativehouse-membership-current" pk=legislativehouse.id %}">Current membership</a>
+        <a href="{% url "wikidata:legislativehouse-membership-all" pk=legislativehouse.id %}">All memberships</a>
     </p>
 
     {% if legislativehouse.legislative_terms.count %}
@@ -37,7 +37,7 @@
             <tbody>{% for term in legislativehouse.legislative_terms.all %}
                 <tr>
                     <td>{{ term.series_ordinal|default_if_none:"" }}</td>
-                    <td><a href="{% url "wikidata:legislativemembership-list" legislativehouse_pk=legislativehouse.id legislativeterm_pk=term.id %}">{{ term }}</a></td>
+                    <td><a href="{% url "wikidata:legislativehouse-membership-term" pk=legislativehouse.id legislativeterm_pk=term.id %}">{{ term }}</a></td>
                     <td>{{ term.start|default_if_none:"" }}</td>
                     <td>{{ term.end|default_if_none:"" }}</td>
                 </tr>{% endfor %}

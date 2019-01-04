@@ -34,7 +34,7 @@
     <tr>
         <td>{{ legislativehouse.link }}</td>
         <td>{{ legislativehouse.administrative_area }}</td>
-        <td><a href="{% url "wikidata:legislativemembership-list-current" legislativehouse_pk=legislativehouse.id %}">Current membership</a></td>
+        <td><a href="{% url "wikidata:legislativehouse-membership-current" pk=legislativehouse.id %}">Current membership</a></td>
     </tr>{% endfor %}
     </tbody>
     </table>

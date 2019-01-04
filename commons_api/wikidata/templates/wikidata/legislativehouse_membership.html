@@ -4,7 +4,15 @@
 {% block h1_title %}{{ legislativehouse.link }} — {% if legislativeterm %}{{ legislativeterm.link }}{% elif current_members %}current membership{% else %}all memberships{% endif %}{% endblock %}
 
 {% block content %}
-    {% if legislativemembership_list %}
+    <dl>
+    <dt>Memberships:</dt>
+    <dd>{{ memberships.count }}/{{ legislative_house_term.number_of_seats|default:legislativehouse.number_of_seats|default:"—" }}</dd>
+    <dt>Districts:</dt>
+    <dd>{{ districts.count }}/{{ legislative_house_term.number_of_districts|default:legislativehouse.number_of_districts|default:"—" }}</dd>
+    </dl>
+
+
+    {% if memberships %}
         <table class="pure-table pure-table-striped">
             <thead>
             <tr>
@@ -18,7 +26,7 @@
                 <th>End cause</th>
             </tr>
             </thead>
-            <tbody>{% for membership in legislativemembership_list %}
+            <tbody>{% for membership in memberships %}
                 <tr>
                     <th>{{ forloop.counter }}</th>
                     <td>{{ membership.person.link }}</td>

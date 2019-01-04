@@ -71,58 +71,57 @@ class PersonDetailView(DetailView):
     model = models.Person
 
 
-class LegislativeMembershipListView(ListView):
-    model = models.LegislativeMembership
+class LegislativeHouseMembershipView(DetailView):
+    model = models.LegislativeHouse
+    template_name_suffix = '_membership'
     all_members = False
     current_members = False
 
     @cached_property
     def legislative_house_term(self):
         if 'legislativeterm_pk' in self.kwargs:
-            return models.LegislativeHouseTerm.objects.get(legislative_house=self.legislative_house,
-                                                           legislative_term_id=self.kwargs['legislativeterm_pk'])
-
-    @cached_property
-    def legislative_house(self):
-        return models.LegislativeHouse.objects.get(id=self.kwargs['legislativehouse_pk'])
+            return models.LegislativeHouseTerm.objects.get(
+                legislative_house=self.object,
+                legislative_term_id=self.kwargs['legislativeterm_pk'],
+            )
 
     @cached_property
     def legislative_term(self):
         if self.legislative_house_term:
             return self.legislative_house_term.legislative_term
 
-    @cached_property
-    def start(self):
-        return self.legislative_term.start if self.legislative_term else datetime.date.today()
+    def filter_timebound_queryset(self, queryset):
+        if not self.all_members:
+            queryset = queryset.filter(start__isnull=False)
+        if self.legislative_term:
+            queryset = queryset.overlaps(self.legislative_term)
+        elif self.current_members:
+            queryset = queryset.current()
+        return queryset
 
     @cached_property
-    def end(self):
-        return self.legislative_term.end if self.legislative_term else datetime.date.today()
+    def districts(self):
+        return self.filter_timebound_queryset(
+            self.object.electoraldistrict_set.all())
+
+    @cached_property
+    def memberships(self):
+        return self.filter_timebound_queryset(
+            self.object.legislativemembership_set.all()
+        ).select_related('parliamentary_group', 'party', 'district',
+                         'person', 'person__sex_or_gender')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context.update({
             'legislativehouseterm': self.legislative_house_term,
-            'legislativehouse': self.legislative_house,
             'legislativeterm': self.legislative_term,
-            'start': self.start,
-            'end': self.end,
+            'districts': self.districts,
+            'memberships': self.memberships,
             'current_members': self.current_members,
             'all_members': self.all_members,
         })
         return context
-
-    def get_queryset(self):
-        qs = super().get_queryset().filter(legislative_house_id=self.kwargs['legislativehouse_pk']) \
-            .select_related('parliamentary_group', 'party', 'district')
-        if not self.all_members:
-            qs = qs.filter(start__isnull=False)
-        if self.legislative_term:
-            qs = qs.overlaps(self.legislative_term)
-        elif self.current_members:
-            qs = qs.current()
-        qs = qs.select_related('district', 'person', 'person__sex_or_gender')
-        return qs
 
 
 class ModerationItemDetailView(ModelFormMixin, ProcessFormView, DetailView):
