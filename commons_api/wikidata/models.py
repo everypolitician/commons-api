@@ -275,6 +275,8 @@ class LegislativeHouse(WikidataItem):
     administrative_area = models.ForeignKey(AdministrativeArea, on_delete=models.CASCADE)
     positions = models.ManyToManyField(Position)
     legislative_terms = models.ManyToManyField(LegislativeTerm, through='LegislativeHouseTerm')
+    number_of_seats = models.IntegerField(null=True, blank=True)
+    number_of_districts = models.IntegerField(null=True, blank=True)
 
 
 class ElectoralDistrict(WikidataItem):

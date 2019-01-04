@@ -32,6 +32,8 @@ def refresh_legislature_list(country_id):
                                                                        result['legislatureLabel']['value'])
         legislature.administrative_area = administrative_area
         legislature.country = country
+        legislature.number_of_seats = result['numberOfSeats']['value'] if 'numberOfSeats' in result else None
+        legislature.number_of_districts = result['numberOfDistricts']['value'] if 'numberOfDistricts' in result else None
         legislature.save()
         if 'legislaturePostLabel' in result:
             position = models.Position.objects.for_id_and_label(item_uri_to_id(result['legislaturePost']),
