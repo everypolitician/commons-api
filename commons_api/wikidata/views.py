@@ -117,12 +117,11 @@ class LegislativeMembershipListView(ListView):
             .select_related('parliamentary_group', 'party', 'district')
         if not self.all_members:
             qs = qs.filter(start__isnull=False)
-        if self.current_members or self.legislative_term:
-            if self.start:
-                qs = qs.filter(Q(end__isnull=True) | Q(end__gte=self.start))
-            if self.end:
-                qs = qs.filter(Q(start__isnull=True) | Q(start__lte=self.end))
-            qs = qs.select_related('district', 'person', 'person__sex_or_gender')
+        if self.legislative_term:
+            qs = qs.overlaps(self.legislative_term)
+        elif self.current_members:
+            qs = qs.current()
+        qs = qs.select_related('district', 'person', 'person__sex_or_gender')
         return qs
 
 
