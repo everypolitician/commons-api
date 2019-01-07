@@ -9,4 +9,5 @@ gunicorn
 psycopg2
 rdflib
 sparqlwrapper
+represent-boundaries
 requests

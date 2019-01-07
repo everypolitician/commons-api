@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'commons_api',
     'commons_api.proto_commons',
     'commons_api.wikidata',
+    'boundaries',
 ]
 
 try:
