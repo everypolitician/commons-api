@@ -8,6 +8,7 @@ flower
 gunicorn
 psycopg2
 rdflib
+PyGithub
 sparqlwrapper
 represent-boundaries
 requests

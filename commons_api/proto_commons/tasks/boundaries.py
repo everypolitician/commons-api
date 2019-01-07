@@ -1,3 +1,18 @@
+import datetime
+import http.client
+import os
+import resource
+import shutil
+import tempfile
+
+import requests
+from django.db import transaction
+
+from boundaries.management.commands.loadshapefiles import Command as LoadShapefilesCommand, create_data_sources
+from boundaries.models import Definition
+from commons_api.proto_commons.models import Shapefile
+from commons_api.wikidata.models import Country
+
 __all__ = ['update_all_boundaries', 'update_boundaries_for_country']
 
 import logging
@@ -10,9 +25,9 @@ import github.PaginatedList
 import github.Repository
 from django.conf import settings
 
-from .. import models
-
 logger = logging.getLogger(__name__)
+
+SHAPEFILE_EXTENSIONS = ('.shp', '.shx', '.dbf', '.prj', '.cpg', '.qpj')
 
 
 @celery.shared_task
@@ -29,8 +44,8 @@ def update_all_boundaries():
             continue
 
         try:
-            country = models.Country.objects.get(iso_3166_1_code=iso_3166_1_code)
-        except models.Country.DoesNotExist:
+            country = Country.objects.get(iso_3166_1_code=iso_3166_1_code)
+        except Country.DoesNotExist:
             logger.warning("Couldn't find Country with code %s for repo %s", iso_3166_1_code, repo.full_name)
             continue
 
@@ -39,17 +54,127 @@ def update_all_boundaries():
 
 @celery.shared_task
 def update_boundaries_for_country(country_id: str, repo_full_name: str=None):
-    country = models.Country.objects.get(id=country_id)
+    country = Country.objects.get(id=country_id)
     g = github.Github()
     if repo_full_name:
         github_repo = g.get_repo(repo_full_name)
     else:
         github_repo = get_github_repo_for_country(country)
 
-    # TODO: Crawl and import boundaries
+    try:
+        boundaries_url = 'https://raw.githubusercontent.com/{repo_full_name}/master/boundaries/build/'.format(
+            repo_full_name=github_repo.full_name
+        )
+        response = requests.get(boundaries_url + 'index.json')
+        response.raise_for_status()
+    except requests.HTTPError:
+        boundaries_url = 'https://raw.githubusercontent.com/{repo_full_name}/master/boundaries/'.format(
+            repo_full_name=github_repo.full_name
+        )
+        response = requests.get(boundaries_url + 'index.json')
+        response.raise_for_status()
+
+    boundaries_index = response.json()
+    directories = {entry['directory'] for entry in boundaries_index}
+    for directory in directories:
+        update_boundaries.delay(country_id, '{}{}/{}.shp'.format(boundaries_url, directory, directory))
 
 
-def get_github_repo_for_country(country: models.Country) -> github.Repository.Repository:
+@celery.shared_task
+def update_boundaries(country_id: str, shapefile_url: str):
+    shapefile, _ = Shapefile.objects.get_or_create(url=shapefile_url)
+    _, etags = download_shapefile(country_id, shapefile_url, head=True)
+    if shapefile.etags != etags:
+        import_shapefile.delay(country_id, shapefile_url)
+
+
+@celery.shared_task
+@transaction.atomic
+def import_shapefile(country_id: str, shapefile_url: str):
+    slug = shapefile_url.rsplit('/', 1)[-1].split('.')[0]
+    print(f"Importing {shapefile_url}")
+    country = Country.objects.get(id=country_id)
+    shapefile_path, etags = download_shapefile(country_id, shapefile_url)
+
+    try:
+        # Update the ETags
+        shapefile, _ = Shapefile.objects.select_for_update().get_or_create(url=shapefile_url)
+        if shapefile.etags == etags:
+            return
+
+        load_shapefiles_command = LoadShapefilesCommand()
+        options = {'merge': None, 'clean': True}
+        definition = Definition({'file': shapefile_path,
+                                 'name': '{} boundaries for {} ({})'.format(slug, country.label, country.id),
+                                 'singular': 'boundary',
+                                 'encoding': 'utf-8',
+                                 'last_updated': datetime.datetime.now(),
+                                 'name_func': lambda feature: feature.get('WIKIDATA'),
+                                 'id_func': lambda feature: feature.get('WIKIDATA')})
+
+        data_sources, tmpdirs = create_data_sources(definition['file'], encoding=definition['encoding'],
+                                                    convert_3d_to_2d=options['clean'])
+
+        load_shapefiles_command.load_boundary_set(slug=country_id + '-' + slug,
+                                                  definition=definition,
+                                                  data_sources=data_sources,
+                                                  options=options)
+
+        # Update the ETags
+        shapefile.etags = etags
+        shapefile.save()
+
+        print("Done: {}".format(sizeof_fmt(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)))
+    finally:
+        # Always clear up the download directory
+        shutil.rmtree(os.path.dirname(shapefile_path))
+
+
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
+
+
+def download_shapefile(country_id: str, shapefile_url: str, head: bool=False):
+    """Downloads a shapefile from the web, and returns the file path
+
+    This also uses ETags to ensure that we don't unnecessarily redownload files that haven't changed.
+    """
+    if not head:
+        download_directory = tempfile.mkdtemp()
+    else:
+        download_directory = None
+
+    try:
+        etags = {}
+        for ext in SHAPEFILE_EXTENSIONS:
+            filename = shapefile_url.rsplit('/', 1)[-1].rsplit('.', 1)[0] + ext
+            response = requests.request('HEAD' if head else 'GET',
+                                        shapefile_url.rsplit('.', 1)[0] + ext,
+                                        stream=True)
+            if response.status_code == http.client.OK:
+                etags[filename] = response.headers['ETag']
+                if not head:
+                    filepath = os.path.join(download_directory, filename)
+                    with open(filepath, 'wb') as f:
+                        response.raw.decode_content = True
+                        shutil.copyfileobj(response.raw, f)
+
+        if head:
+            return None, etags
+        else:
+            return os.path.join(download_directory, shapefile_url.rsplit('/', 1)[-1]), etags
+    except BaseException:
+        if download_directory:
+            # If the full download failed for any reason, clean up any other files
+            shutil.rmtree(download_directory)
+        raise
+
+
+def get_github_repo_for_country(country: Country) -> github.Repository.Repository:
     """Return a Democratic Commons repository for a given country
 
     If no repository could be found, or the Country object doesn't have an ISO 3166-1 code, this raises ValueError

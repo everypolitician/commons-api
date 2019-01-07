@@ -80,6 +80,8 @@ TEMPLATES = [
 ROOT_URLCONF = 'commons_api.urls'
 STATIC_URL = '/static/'
 
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT') or os.path.expanduser('~/media')
+
 WDQS_URL = 'https://query.wikidata.org/sparql'
 
 ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION'))
