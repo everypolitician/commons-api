@@ -9,9 +9,9 @@ import requests
 from django.db import transaction
 
 from boundaries.management.commands.loadshapefiles import Command as LoadShapefilesCommand, create_data_sources
-from boundaries.models import Definition
+from boundaries.models import Definition, BoundarySet
 from commons_api.proto_commons.models import Shapefile
-from commons_api.wikidata.models import Country
+from commons_api.wikidata.models import Country, Spatial
 
 __all__ = ['update_all_boundaries', 'update_boundaries_for_country']
 
@@ -23,6 +23,8 @@ import github
 import github.Consts
 import github.PaginatedList
 import github.Repository
+
+from django.apps import apps
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -125,6 +127,9 @@ def import_shapefile(country_id: str, shapefile_url: str):
         shapefile.save()
 
         print("Done: {}".format(sizeof_fmt(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss*1024)))
+
+        boundary_set = BoundarySet.objects.get(slug=country_id + '-' + slug)
+        update_wikidata_boundary_links(boundary_set)
     finally:
         # Always clear up the download directory
         shutil.rmtree(os.path.dirname(shapefile_path))
@@ -210,3 +215,12 @@ def get_github_repos_with_topics() -> Iterable[github.Repository.Repository]:
             'Accept': github.Consts.mediaTypeTopicsPreview,
         }
     )
+
+
+def update_wikidata_boundary_links(boundary_set: BoundarySet):
+    id_mapping = dict(boundary_set.boundaries.values_list('external_id', 'pk'))
+    for model in apps.get_models():
+        if issubclass(model, Spatial):
+            for obj in model.objects.filter(id__in=id_mapping):
+                obj.boundary_id = id_mapping[obj.id]
+                obj.save(force_update=True)
