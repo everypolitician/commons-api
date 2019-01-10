@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'rest_framework',
     'commons_api',
+    'commons_api.proto_commons',
     'commons_api.wikidata',
 ]
 
