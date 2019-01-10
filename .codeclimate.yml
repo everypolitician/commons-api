@@ -1,2 +1,3 @@
 exclude_patterns:
 - "commons_api/static/lib/"
+- "**/migrations/"
