@@ -93,6 +93,18 @@ REST_FRAMEWORK = {
 
 DEMOCRATIC_COMMONS_GITHUB_USER = os.environ.get('DEMOCRATIC_COMMONS_GITHUB_USER', 'everypolitician')
 
+# https://github.com/celery/celery/pull/4902 hasn't made it into v4.2.1 of
+# celery, as of the time of writing,
+import re
+if not hasattr(re, '_pattern_type'):
+    re._pattern_type = re.Pattern
+
+CELERY_TASK_ROUTES = {
+    'commons_api.proto_commons.tasks.boundaries.import_shapefile': {
+        'queue': 'shapefiles'
+    }
+}
+
 if 'DYNO' in os.environ:
     # django_heroku uses dj_database_url, so tell it we're using PostGIS
     os.environ['DATABASE_URL'] = re.sub('^postgres:', 'postgis:', os.environ['DATABASE_URL'])
