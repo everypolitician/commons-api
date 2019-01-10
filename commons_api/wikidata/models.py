@@ -29,6 +29,13 @@ class Timebound(models.Model):
         abstract = True
 
 
+class Spatial(models.Model):
+    boundary = models.ForeignKey('boundaries.Boundary', null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        abstract = True
+
+
 class ModerationItem(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.CharField(max_length=64, db_index=True)
@@ -192,7 +199,7 @@ class Term(WikidataItem):
     pass
 
 
-class Country(WikidataItem):
+class Country(Spatial, WikidataItem):
     flag_image = models.URLField(null=True, blank=True)
     population = models.IntegerField(null=True, blank=True)
     iso_3166_1_code = models.CharField(max_length=2, null=True, blank=True,
@@ -222,7 +229,7 @@ class Person(WikidataItem):
     )
 
 
-class AdministrativeArea(WikidataItem):
+class AdministrativeArea(Spatial, WikidataItem):
     pass
 
 
@@ -247,7 +254,7 @@ class LegislativeHouse(WikidataItem):
     number_of_districts = models.IntegerField(null=True, blank=True)
 
 
-class ElectoralDistrict(WikidataItem):
+class ElectoralDistrict(Spatial, WikidataItem):
     legislative_house = models.ForeignKey(LegislativeHouse,
                                           blank=True, null=True,
                                           on_delete=models.CASCADE)
