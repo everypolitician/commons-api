@@ -4,6 +4,7 @@ django-dirtyfields
 django-heroku
 django-reversion
 djangorestframework
+django-celery-results
 flower
 gunicorn
 psycopg2
