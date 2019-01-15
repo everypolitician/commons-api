@@ -4,8 +4,11 @@ import os
 import resource
 import shutil
 import tempfile
+from ctypes import c_void_p
 
 import requests
+from django.contrib.gis.gdal.libgdal import lgdal
+from django.contrib.gis.gdal.prototypes.generation import void_output, int_output
 from django.db import transaction
 
 from boundaries.management.commands.loadshapefiles import Command as LoadShapefilesCommand, create_data_sources
@@ -26,10 +29,14 @@ import github.Repository
 
 from django.apps import apps
 from django.conf import settings
+from django.contrib.gis.gdal.prototypes import ds as capi
 
 logger = logging.getLogger(__name__)
 
 SHAPEFILE_EXTENSIONS = ('.shp', '.shx', '.dbf', '.prj', '.cpg', '.qpj')
+
+flatten_to_2d = void_output(lgdal.OGR_G_FlattenTo2D, [c_void_p])
+is_3d = int_output(lgdal.OGR_G_Is3D, [c_void_p])
 
 
 @celery.shared_task
@@ -105,7 +112,7 @@ def import_shapefile(country_id: str, shapefile_url: str):
             return
 
         load_shapefiles_command = LoadShapefilesCommand()
-        options = {'merge': None, 'clean': True}
+        options = {'merge': None, 'clean': False}
         definition = Definition({'file': shapefile_path,
                                  'name': '{} boundaries for {} ({})'.format(slug, country.label, country.id),
                                  'singular': 'boundary',
@@ -116,6 +123,8 @@ def import_shapefile(country_id: str, shapefile_url: str):
 
         data_sources, tmpdirs = create_data_sources(definition['file'], encoding=definition['encoding'],
                                                     convert_3d_to_2d=options['clean'])
+
+        flatten_data_sources(data_sources)
 
         load_shapefiles_command.load_boundary_set(slug=country_id + '-' + slug,
                                                   definition=definition,
@@ -133,6 +142,16 @@ def import_shapefile(country_id: str, shapefile_url: str):
     finally:
         # Always clear up the download directory
         shutil.rmtree(os.path.dirname(shapefile_path))
+
+
+def flatten_data_sources(data_sources):
+    """Iterates through data_sources, ensuring all geometries are 2D, for loading into PostGIS"""
+    for data_source in data_sources:
+        for layer in data_source:
+            for feature in layer:
+                geom_ptr = capi.get_feat_geom_ref(feature.ptr)
+                if is_3d(geom_ptr):
+                    flatten_to_2d(geom_ptr)
 
 
 def sizeof_fmt(num, suffix='B'):
