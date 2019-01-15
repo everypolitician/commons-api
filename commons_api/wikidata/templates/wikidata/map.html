@@ -1,0 +1,26 @@
+{% if object and object.boundary %}
+
+        <h2>Boundary</h2>
+
+        <div id="mapid" style="width: 600px; height: 400px;"></div>
+
+
+        <script>
+
+            var mymap = L.map('mapid');
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: 'Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(mymap);
+
+            var area = new L.GeoJSON( {{ object.boundary.simple_shape.geojson|safe }} );
+
+            area.addTo(mymap);
+
+            mymap.fitBounds(area.getBounds());
+
+        </script>
+
+{% endif %}
+
