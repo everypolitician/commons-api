@@ -1,4 +1,4 @@
-SELECT DISTINCT ?legislature ?legislatureLabel ?adminArea ?adminAreaLabel ?adminAreaTypes ?legislaturePost ?legislaturePostLabel ?numberOfSeats WHERE {
+SELECT DISTINCT ?legislature ?legislatureLabel ?adminArea ?adminAreaLabel ?adminAreaTypes ?legislaturePost ?legislaturePostLabel ?numberOfSeats ?numberOfDistricts WHERE {
   {
     {% include 'wikidata/query/admin_area_list.rq' %}
   }
@@ -39,6 +39,9 @@ SELECT DISTINCT ?legislature ?legislatureLabel ?adminArea ?adminAreaLabel ?admin
   }
   OPTIONAL {
     ?legislature wdt:P1342 ?numberOfSeats .
+  }
+  OPTIONAL {
+    ?legislature wdt:P4253 ?numberOfDistricts .
   }
 
   # Remove legislatures that have ended

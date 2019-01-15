@@ -32,6 +32,8 @@ def refresh_legislature_list(country_id):
                                                                        result['legislatureLabel']['value'])
         legislature.administrative_area = administrative_area
         legislature.country = country
+        legislature.number_of_seats = result['numberOfSeats']['value'] if 'numberOfSeats' in result else None
+        legislature.number_of_districts = result['numberOfDistricts']['value'] if 'numberOfDistricts' in result else None
         legislature.save()
         if 'legislaturePostLabel' in result:
             position = models.Position.objects.for_id_and_label(item_uri_to_id(result['legislaturePost']),
@@ -120,10 +122,8 @@ def refresh_legislature_members(legislature_id):
         for row in rows:
             if 'termLabel' in row:
                 legislative_term = models.LegislativeTerm.objects.for_id_and_label(item_uri_to_id(row['term']),
-                                                                                   row['termLabel']['value'])
-                legislative_term.start = get_date(row.get('termStart'))
-                legislative_term.end = get_date(row.get('termEnd'))
-                legislative_term.save()
+                                                                                   row['termLabel']['value'],
+                                                                                   save=True)
                 legislative_terms.append(legislative_term)
 
         try:

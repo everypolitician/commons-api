@@ -10,17 +10,19 @@ from django.db import models
 from django.contrib.postgres.fields import HStoreField, JSONField
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext, gettext_lazy as _
+from django.utils.translation import gettext
 from dirtyfields import DirtyFieldsMixin
-from django.utils import translation
 
 from commons_api.wikidata.namespaces import WD, RDF, RDFS, WDT, SCHEMA, WIKIBASE
+from commons_api.wikidata.managers import TimeboundManager, WikidataItemManager
 from commons_api.wikidata.utils import lang_dict, select_multilingual, item_uri_to_id
 
 
 class Timebound(models.Model):
     start = models.DateField(null=True, blank=True)
     end = models.DateField(null=True, blank=True)
+
+    objects = TimeboundManager()
 
     class Meta:
         abstract = True
@@ -105,18 +107,6 @@ class Moderateable(DirtyFieldsMixin, models.Model):
 
     class Meta:
         abstract = True
-
-
-class WikidataItemManager(models.Manager):
-    def for_id_and_label(self, id, label, save=False):
-        try:
-            obj = self.get(id=id)
-        except self.model.DoesNotExist:
-            if save:
-                obj = self.create(id=id, labels={'en': label})
-            else:
-                obj = self.model(id=id, labels={'en': label})
-        return obj
 
 
 class WikidataItem(Moderateable, Timebound):
@@ -249,6 +239,8 @@ class LegislativeHouse(WikidataItem):
     administrative_area = models.ForeignKey(AdministrativeArea, on_delete=models.CASCADE)
     positions = models.ManyToManyField(Position)
     legislative_terms = models.ManyToManyField(LegislativeTerm, through='LegislativeHouseTerm')
+    number_of_seats = models.IntegerField(null=True, blank=True)
+    number_of_districts = models.IntegerField(null=True, blank=True)
 
 
 class ElectoralDistrict(WikidataItem):

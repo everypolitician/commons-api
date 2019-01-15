@@ -8,7 +8,7 @@ class CountryAdmin(admin.ModelAdmin):
 
 
 class LegislativeHouseAdmin(admin.ModelAdmin):
-    list_display = ('id', 'label', 'country')
+    list_display = ('id', 'label', 'country', 'number_of_seats', 'number_of_districts')
     list_filter = ('country',)
 
 
