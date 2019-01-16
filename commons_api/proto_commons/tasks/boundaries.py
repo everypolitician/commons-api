@@ -5,6 +5,7 @@ import resource
 import shutil
 import tempfile
 from ctypes import c_void_p
+from pathlib import Path
 
 import requests
 from django.contrib.gis.gdal.libgdal import lgdal
@@ -33,7 +34,7 @@ from django.contrib.gis.gdal.prototypes import ds as capi
 
 logger = logging.getLogger(__name__)
 
-SHAPEFILE_EXTENSIONS = ('.shp', '.shx', '.dbf', '.prj', '.cpg', '.qpj')
+SHAPEFILE_EXTENSIONS = ('.shp', '.shx', '.dbf', '.prj', '.cpg', '.qpj', '-COPYRIGHT')
 
 flatten_to_2d = void_output(lgdal.OGR_G_FlattenTo2D, [c_void_p])
 is_3d = int_output(lgdal.OGR_G_Is3D, [c_void_p])
@@ -104,7 +105,10 @@ def import_shapefile(country_id: str, shapefile_url: str):
     print(f"Importing {shapefile_url}")
     country = Country.objects.get(id=country_id)
     shapefile_path, etags = download_shapefile(country_id, shapefile_url)
-
+    try:
+        source_notes = Path(shapefile_path[:-4] + '-COPYRIGHT').read_text()
+    except FileNotFoundError:
+        source_notes = ''
     try:
         # Update the ETags
         shapefile, _ = Shapefile.objects.select_for_update().get_or_create(url=shapefile_url)
@@ -119,7 +123,8 @@ def import_shapefile(country_id: str, shapefile_url: str):
                                  'encoding': 'utf-8',
                                  'last_updated': datetime.datetime.now(),
                                  'name_func': lambda feature: feature.get('WIKIDATA'),
-                                 'id_func': lambda feature: feature.get('WIKIDATA')})
+                                 'id_func': lambda feature: feature.get('WIKIDATA'),
+                                 'notes': source_notes})
 
         data_sources, tmpdirs = create_data_sources(definition['file'], encoding=definition['encoding'],
                                                     convert_3d_to_2d=options['clean'])
