@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.postgres.fields import HStoreField, JSONField
 from django.urls import reverse
@@ -23,6 +24,13 @@ class Timebound(models.Model):
     end = models.DateField(null=True, blank=True)
 
     objects = TimeboundManager()
+
+    class Meta:
+        abstract = True
+
+
+class Spatial(models.Model):
+    boundary = models.ForeignKey('boundaries.Boundary', null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:
         abstract = True
@@ -191,9 +199,12 @@ class Term(WikidataItem):
     pass
 
 
-class Country(WikidataItem):
+class Country(Spatial, WikidataItem):
     flag_image = models.URLField(null=True, blank=True)
     population = models.IntegerField(null=True, blank=True)
+    iso_3166_1_code = models.CharField(max_length=2, null=True, blank=True,
+                                       help_text='Uppercase ISO 3166-1 country code',
+                                       validators=[RegexValidator(r'^[A-Z]{2}$')])
 
     class Meta:
         verbose_name_plural = 'countries'
@@ -218,7 +229,7 @@ class Person(WikidataItem):
     )
 
 
-class AdministrativeArea(WikidataItem):
+class AdministrativeArea(Spatial, WikidataItem):
     pass
 
 
@@ -243,7 +254,7 @@ class LegislativeHouse(WikidataItem):
     number_of_districts = models.IntegerField(null=True, blank=True)
 
 
-class ElectoralDistrict(WikidataItem):
+class ElectoralDistrict(Spatial, WikidataItem):
     legislative_house = models.ForeignKey(LegislativeHouse,
                                           blank=True, null=True,
                                           on_delete=models.CASCADE)

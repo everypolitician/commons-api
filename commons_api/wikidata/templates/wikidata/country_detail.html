@@ -6,6 +6,9 @@
     <div id="actions">
     <form method="post">{% csrf_token %}
       <input type="submit" name="refresh-legislature-list" value="Refresh legislature list">
+      {% if country.iso_3166_1_code %}
+        <input type="submit" name="update-boundaries" value="Update boundaries">
+      {% endif %}
     </form>
     </div>
 {% endblock %}

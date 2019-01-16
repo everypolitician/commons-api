@@ -1,4 +1,5 @@
 import os
+import re
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -16,7 +17,7 @@ if not SECRET_KEY and DEBUG:
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': os.environ.get('DATABASE_NAME', 'commons-api'),
     },
 }
@@ -31,7 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'rest_framework',
     'commons_api',
+    'commons_api.proto_commons',
     'commons_api.wikidata',
+    'boundaries',
 ]
 
 try:
@@ -77,6 +80,8 @@ TEMPLATES = [
 ROOT_URLCONF = 'commons_api.urls'
 STATIC_URL = '/static/'
 
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT') or os.path.expanduser('~/media')
+
 WDQS_URL = 'https://query.wikidata.org/sparql'
 
 ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION'))
@@ -86,7 +91,24 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 1000
 }
 
+DEMOCRATIC_COMMONS_GITHUB_USER = os.environ.get('DEMOCRATIC_COMMONS_GITHUB_USER', 'everypolitician')
+
+# https://github.com/celery/celery/pull/4902 hasn't made it into v4.2.1 of
+# celery, as of the time of writing,
+import re
+if not hasattr(re, '_pattern_type'):
+    re._pattern_type = re.Pattern
+
+CELERY_TASK_ROUTES = {
+    'commons_api.proto_commons.tasks.boundaries.import_shapefile': {
+        'queue': 'shapefiles'
+    }
+}
+
 if 'DYNO' in os.environ:
+    # django_heroku uses dj_database_url, so tell it we're using PostGIS
+    os.environ['DATABASE_URL'] = re.sub('^postgres:', 'postgis:', os.environ['DATABASE_URL'])
+
     # Configure Django App for Heroku.
     import django_heroku
     django_heroku.settings(locals())

@@ -4,7 +4,7 @@ from . import models
 
 
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'label')
+    list_display = ('id', 'label', 'iso_3166_1_code')
 
 
 class LegislativeHouseAdmin(admin.ModelAdmin):
