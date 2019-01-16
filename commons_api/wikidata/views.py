@@ -24,6 +24,10 @@ class CountryListView(ListView):
         if 'refresh-country-list' in request.POST:
             tasks.refresh_country_list.delay()
             messages.info(request, "Country list will be refreshed")
+        if 'update-all-boundaries' in request.POST:
+            from commons_api.proto_commons.tasks import update_all_boundaries
+            update_all_boundaries.delay()
+            messages.info(request, "All boundaries will be refreshed")
         return redirect(self.request.build_absolute_uri())
 
     def get_queryset(self):
@@ -40,6 +44,12 @@ class CountryDetailView(DetailView):
             tasks.refresh_legislature_list.delay(self.object.id)
             messages.info(request, "Legislature list for {} will "
                                    "be refreshed".format(self.object))
+        if 'update-boundaries' in request.POST:
+            from commons_api.proto_commons.tasks import update_boundaries_for_country
+            update_boundaries_for_country.delay(self.object.id)
+            messages.info(request, "Boundaries for {} will "
+                                   "be refreshed".format(self.object))
+
         return redirect(self.object.get_absolute_url())
 
 

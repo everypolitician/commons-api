@@ -1,6 +1,6 @@
-# https://github.com/everypolitician/legislative-explorer/blob/master/lib/query/country_list.rb
+# Adapted from https://github.com/everypolitician/legislative-explorer/blob/master/lib/query/country_list.rb
 
-SELECT ?item ?itemLabel WHERE {
+SELECT ?item ?itemLabel ?itemCode WHERE {
   ?item p:P31 ?instanceOfStatement .
   ?instanceOfStatement ps:P31 wd:Q6256 .
   MINUS { ?instanceOfStatement pq:P582 ?end }  # no longer a country
@@ -8,5 +8,6 @@ SELECT ?item ?itemLabel WHERE {
   ?memberOfStatement ps:P463 wd:Q1065 .
   MINUS { ?memberOfStatement pq:P582 ?end }    # no longer a member of the UN
   MINUS { ?item wdt:P1552 wd:Q47185282 }       # not free
+  OPTIONAL { ?item wdt:P297 ?itemCode }        # ISO 3166-1 code
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
 } ORDER BY ?itemLabel
