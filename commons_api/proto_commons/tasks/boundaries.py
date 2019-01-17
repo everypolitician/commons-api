@@ -1,5 +1,6 @@
 import datetime
 import http.client
+import json
 import os
 import resource
 import shutil
@@ -9,6 +10,7 @@ from pathlib import Path
 
 import requests
 from django.contrib.gis.gdal.libgdal import lgdal
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.gdal.prototypes.generation import void_output, int_output
 from django.db import transaction
 
@@ -16,6 +18,7 @@ from boundaries.management.commands.loadshapefiles import Command as LoadShapefi
 from boundaries.models import Definition, BoundarySet
 from commons_api.proto_commons.models import Shapefile
 from commons_api.wikidata.models import Country, Spatial
+
 
 __all__ = ['update_all_boundaries', 'update_boundaries_for_country']
 
@@ -152,6 +155,14 @@ def import_shapefile(country_id: str, shapefile_url: str):
         shutil.rmtree(os.path.dirname(shapefile_path))
 
 
+def get_spatial_model(app_label, model):
+    ct = ContentType.objects.get_by_natural_key(app_label, model)
+    model = ct.model_class()
+    if not issubclass(model, Spatial):
+        raise TypeError('Model {} with content_type {}.{} is not a subclass of the Spatial model'.format(model, app_label, model))
+    return model
+
+
 def flatten_data_sources(data_sources):
     """Iterates through data_sources, ensuring all geometries are 2D, for loading into PostGIS"""
     for data_source in data_sources:
@@ -251,3 +262,5 @@ def update_wikidata_boundary_links(boundary_set: BoundarySet):
             for obj in model.objects.filter(id__in=id_mapping):
                 obj.boundary_id = id_mapping[obj.id]
                 obj.save(force_update=True)
+
+

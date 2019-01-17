@@ -1,4 +1,5 @@
 from .geojson import *
+from .geoshape import *
 from .moderation import *
 from .popolo import *
 from .serializers import *
