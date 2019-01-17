@@ -108,6 +108,9 @@ CELERY_TASK_ROUTES = {
 
 CELERY_RESULT_BACKEND = 'django-db'
 
+BOUNDARIES_SIMPLE_SHAPE_TOLERANCE = os.environ.get(
+    'BOUNDARIES_SIMPLE_SHAPE_TOLERANCE', 0.001)
+
 if 'DYNO' in os.environ:
     # django_heroku uses dj_database_url, so tell it we're using PostGIS
     os.environ['DATABASE_URL'] = re.sub('^postgres:', 'postgis:', os.environ['DATABASE_URL'])
