@@ -9,7 +9,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.postgres.fields import HStoreField, JSONField
-from django.urls import reverse
+from django.urls import reverse, NoReverseMatch
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext
 from dirtyfields import DirtyFieldsMixin
@@ -140,9 +140,14 @@ class WikidataItem(Moderateable, Timebound):
 
     @property
     def link(self):
-        return mark_safe('<a href="{}" class="item-link item-link-{}">{}</a>'.format(escape(self.get_absolute_url()),
-                                                                                     self._meta.model_name,
-                                                                                     escape(self.label, quote=False)))
+        try:
+            return mark_safe('<a href="{}" class="item-link item-link-{}">{}</a>'.format(
+                escape(self.get_absolute_url()),
+                self._meta.model_name,
+                escape(self.label, quote=False))
+            )
+        except NoReverseMatch:
+            return self.label
 
     @property
     def wikipedia_articles(self):

@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.postgres',
     'django.contrib.humanize',
     'rest_framework',
+    'django_celery_results',
     'commons_api',
     'commons_api.proto_commons',
     'commons_api.wikidata',
@@ -104,6 +105,8 @@ CELERY_TASK_ROUTES = {
         'queue': 'shapefiles'
     }
 }
+
+CELERY_RESULT_BACKEND = 'django-db'
 
 if 'DYNO' in os.environ:
     # django_heroku uses dj_database_url, so tell it we're using PostGIS

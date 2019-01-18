@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Job Queue Status{% endblock %}
+{% block h1_title %}Job Queue Status{% endblock %}
+
+{% block content %}
+    <p>Updates from Wikidata and other sources are managed in a queue.</p>
+
+    <section>
+        <h2>Active tasks</h2>
+        {% if active_tasks %}
+            <table class="pure-table pure-table-striped">
+                <thead>
+                <tr>
+                    <th>Task name</th>
+                    <th>Arguments</th>
+                    <th>Started at</th>
+                </tr>
+                </thead>
+                <tbody>{% for task in active_tasks %}
+                    <tr>
+                        <td>{{ task.name }}</td>
+                        <td>
+                            {% if task.parsed_args %}
+
+                                {% for arg in task.parsed_args %}
+                                    {{ arg }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                {{ task_result.args }}
+                            {% endif %}
+                        </td>
+                        <td>{{ task.time_start }}</td>
+
+                    </tr>{% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>There are no active tasks</p>
+        {% endif %}
+    </section>
+
+    <section>
+        <h2>Recent tasks</h2>
+
+        <table class="pure-table pure-table-striped">
+            <thead>
+            <tr>
+                <th>Task name</th>
+                <th>Arguments</th>
+                <th>Status</th>
+                <th>Done at</th>
+            </tr>
+            </thead>
+            <tbody>{% for task in taskresults %}
+                <tr>
+                    <td>{{ task.name }}</td>
+                    <td>
+                        {% if task.parsed_args %}
+
+                            {% for arg in task.parsed_args %}
+                                {{ arg }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            {{ task_result.args }}
+                        {% endif %}
+                    </td>
+                    <td>{{ task.status }}</td>
+                    <td>{{ task.date_done }}</td>
+
+                </tr>{% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}
