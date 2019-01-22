@@ -100,26 +100,20 @@ class LegislativeHouseMembershipView(DetailView):
         if self.legislative_house_term:
             return self.legislative_house_term.legislative_term
 
-    def filter_timebound_queryset(self, queryset):
-        if not self.all_members:
-            queryset = queryset.filter(start__isnull=False)
-        if self.legislative_term:
-            queryset = queryset.overlaps(self.legislative_term)
-        elif self.current_members:
-            queryset = queryset.current()
-        return queryset
-
     @cached_property
     def districts(self):
-        return self.filter_timebound_queryset(
-            self.object.electoraldistrict_set.all())
+        return self.object.get_districts(
+            only_current=self.current_members,
+            legislative_term=self.legislative_term
+        )
 
     @cached_property
     def memberships(self):
-        return self.filter_timebound_queryset(
-            self.object.legislativemembership_set.all()
-        ).select_related('parliamentary_group', 'party', 'district',
-                         'person', 'person__sex_or_gender')
+        return self.object.get_memberships(
+            require_start=not self.all_members,
+            only_current=self.current_members,
+            legislative_term=self.legislative_term
+        ).select_related('parliamentary_group', 'party', 'district', 'person', 'person__sex_or_gender')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)

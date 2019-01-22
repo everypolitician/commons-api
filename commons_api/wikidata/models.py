@@ -258,6 +258,23 @@ class LegislativeHouse(WikidataItem):
     number_of_seats = models.IntegerField(null=True, blank=True)
     number_of_districts = models.IntegerField(null=True, blank=True)
 
+    def _filter_timebound_queryset(self, queryset, require_start=True, current=False, legislative_term=None):
+        if require_start:
+            queryset = queryset.filter(start__isnull=False)
+        if legislative_term:
+            queryset = queryset.overlaps(legislative_term)
+        elif current:
+            queryset = queryset.current()
+        return queryset
+
+    def get_districts(self, require_start=True, only_current=False, legislative_term=None):
+        return self._filter_timebound_queryset(self.electoraldistrict_set,
+                                               require_start, only_current, legislative_term)
+
+    def get_memberships(self, require_start=False, only_current=False, legislative_term=None):
+        return self._filter_timebound_queryset(LegislativeMembership.objects.filter(legislative_house=self).select_related('person', 'parliamentary_group', 'party', 'position'),
+                                               require_start, only_current, legislative_term)
+
 
 class ElectoralDistrict(Spatial, WikidataItem):
     legislative_house = models.ForeignKey(LegislativeHouse,
