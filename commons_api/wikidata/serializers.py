@@ -1,5 +1,6 @@
 import json
 
+from rest_framework.fields import SerializerMethodField
 from rest_framework.serializers import ModelSerializer
 
 from boundaries.views import BoundaryListView
@@ -63,11 +64,54 @@ class LegislativeHouseSerializer(ModelSerializer):
         fields = ('id', 'labels', 'administrative_area')
 
 
+class OrganizationSerializer(ModelSerializer):
+    class Meta:
+        model = models.Organization
+        fields = ('id', 'labels')
+
+
+class TermSerializer(ModelSerializer):
+    class Meta:
+        model = models.Term
+        fields = ('id', 'labels')
+
+
+class PositionSerializer(ModelSerializer):
+    class Meta:
+        model = models.Position
+        fields = ('id', 'labels')
+
+
 class LegislativeMembershipSerializer(ModelSerializer):
     person = PersonSerializer()
-    district = ElectoralDistrictSerializer()
-    legislative_house = LegislativeHouseSerializer()
+    parliamentary_group = OrganizationSerializer()
+    position = PositionSerializer()
+    party = OrganizationSerializer()
+    end_cause = TermSerializer()
 
     class Meta:
         model = models.LegislativeMembership
-        fields = ('id', 'person', 'legislative_house', 'legislative_house_id', 'district', 'district_id', 'start', 'end')
+        fields = ('id', 'district_id', 'position', 'person',
+                  'parliamentary_group', 'party', 'independent', 'start', 'end', 'end_cause')
+
+
+class LegislativeHouseMembershipSerializer(ModelSerializer):
+    # person = PersonSerializer()
+    # district = ElectoralDistrictSerializer()
+    # legislative_house = LegislativeHouseSerializer()
+    districts = SerializerMethodField()
+    memberships = SerializerMethodField()
+
+    def get_districts(self, instance):
+        districts = instance.get_districts(only_current=self.context.get('current_members'),
+                                           legislative_term=self.context.get('legislative_term'))
+        return ElectoralDistrictSerializer(instance=districts, many=True, context=self.context).data
+
+    def get_memberships(self, instance):
+        memberships = instance.get_memberships(only_current=self.context.get('current_members'),
+                                               legislative_term=self.context.get('legislative_term'))
+        return LegislativeMembershipSerializer(instance=memberships, many=True, context=self.context).data
+
+    class Meta:
+        model = models.LegislativeHouse
+        fields = ('id', 'labels', 'districts', 'memberships')
