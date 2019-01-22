@@ -31,6 +31,12 @@ class SpatialSerializer(ModelSerializer):
         return data
 
 
+class CountrySerializer(SpatialSerializer):
+    class Meta:
+        model = models.Country
+        fields = ('id', 'labels', 'flag_image', 'population', 'iso_3166_1_code', 'wikipedia_articles')
+
+
 class PersonSerializer(ModelSerializer):
     class Meta:
         model = models.Person
