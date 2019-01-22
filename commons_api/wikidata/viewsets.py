@@ -1,6 +1,8 @@
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, GenericViewSet
 
 from . import models, renderers, serializers
 
@@ -38,12 +40,21 @@ class LegislativeHouseViewSet(ReadOnlyModelViewSet):
     )
 
 
-class LegislativeMembershipViewSet(ReadOnlyModelViewSet):
-    queryset = models.LegislativeMembership.objects.filter(legislative_house_id='Q11005')
-    serializer_class = serializers.LegislativeMembershipSerializer
+class LegislativeHouseMembershipViewSet(RetrieveModelMixin, GenericViewSet):
+    queryset = models.LegislativeHouse.objects.all()
+    serializer_class = serializers.LegislativeHouseMembershipSerializer
     renderer_classes = (
         BrowsableAPIRenderer,
         JSONRenderer,
         renderers.PopoloJSONRenderer,
     )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if 'legislative_term' in self.request.GET:
+            context['legislative_term'] = get_object_or_404(models.LegislativeTerm,
+                                                            pk=self.request.GET['legislative_term'])
+        context['all_members'] = 'all_members' in self.request.GET
+        context['current_members'] = 'current_members' in self.request.GET
+        return context
 
