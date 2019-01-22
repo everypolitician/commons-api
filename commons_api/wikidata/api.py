@@ -6,4 +6,7 @@ router = DefaultRouter()
 
 router.register('country', viewsets.CountryViewSet)
 router.register('electoral-district', viewsets.ElectoralDistrictViewSet)
+router.register('legislative-house',
+                viewsets.LegislativeHouseViewSet,
+                base_name='legislativehouse')
 router.register('legislative-membership', viewsets.LegislativeMembershipViewSet)

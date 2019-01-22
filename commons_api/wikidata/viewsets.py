@@ -29,6 +29,15 @@ class ElectoralDistrictViewSet(ReadOnlyModelViewSet):
     )
 
 
+class LegislativeHouseViewSet(ReadOnlyModelViewSet):
+    queryset = models.LegislativeHouse.objects.select_related('administrative_area')
+    serializer_class = serializers.LegislativeHouseSerializer
+    filter_fields = ('country',)
+    filter_backends = (
+        DjangoFilterBackend,
+    )
+
+
 class LegislativeMembershipViewSet(ReadOnlyModelViewSet):
     queryset = models.LegislativeMembership.objects.filter(legislative_house_id='Q11005')
     serializer_class = serializers.LegislativeMembershipSerializer
