@@ -38,5 +38,5 @@ urlpatterns = (
          views.ModerationItemDetailView.as_view(),
          name='moderationitem-detail'),
 
-    path('api/', include(api.router.get_urls()), name='api'),
+    path('api/', include((api.router.get_urls(), 'api'), 'api')),
 )
