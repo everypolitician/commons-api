@@ -5,4 +5,5 @@ from . import viewsets
 router = DefaultRouter()
 
 router.register('country', viewsets.CountryViewSet)
+router.register('electoral-district', viewsets.ElectoralDistrictViewSet)
 router.register('legislative-membership', viewsets.LegislativeMembershipViewSet)

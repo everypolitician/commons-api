@@ -46,7 +46,7 @@ class PersonSerializer(ModelSerializer):
 class ElectoralDistrictSerializer(SpatialSerializer):
     class Meta:
         model = models.ElectoralDistrict
-        fields = ('id', 'labels')
+        fields = ('id', 'labels', 'legislative_house')
 
 
 class AdministrativeAreaSerializer(ModelSerializer):
