@@ -37,7 +37,10 @@ logger = logging.getLogger(__name__)
 SHAPEFILE_EXTENSIONS = ('.shp', '.shx', '.dbf', '.prj', '.cpg', '.qpj', '-COPYRIGHT')
 
 flatten_to_2d = void_output(lgdal.OGR_G_FlattenTo2D, [c_void_p])
-is_3d = int_output(lgdal.OGR_G_Is3D, [c_void_p])
+try:  # GDAL 2.1+
+    coordinate_dimension = int_output(lgdal.OGR_G_CoordinateDimension, [c_void_p])
+except AttributeError:  # GDAL 1.10
+    coordinate_dimension = int_output(lgdal.OGR_G_GetCoordinateDimension, [c_void_p])
 
 
 @celery.shared_task
@@ -155,7 +158,7 @@ def flatten_data_sources(data_sources):
         for layer in data_source:
             for feature in layer:
                 geom_ptr = capi.get_feat_geom_ref(feature.ptr)
-                if is_3d(geom_ptr):
+                if coordinate_dimension(geom_ptr) > 2:
                     flatten_to_2d(geom_ptr)
 
 
