@@ -1,0 +1,26 @@
+language: python
+services:
+  - postgresql
+addons:
+  postgresql: "10"
+  apt:
+    packages:
+    - postgis
+    - postgresql-10
+    - postgresql-10-postgis-2.4
+    - postgresql-10-postgis-2.4-scripts
+    - postgresql-client-10
+    - postgresql-contrib-10
+    - python-gdal
+python:
+  - "3.6"
+install:
+  - pip install -r requirements.txt
+  - pip install codecov
+env:
+  global:
+    - DJANGO_SETTINGS_MODULE=commons_api.tests.settings DJANGO_ALLOWED_HOSTS=localhost
+    - PGPORT=5433
+script: PYTHONPATH=. coverage run --source=. `which django-admin.py` test
+after_success:
+  - codecov
