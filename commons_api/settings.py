@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.postgres',
     'django.contrib.humanize',
+    'django_filters',
     'rest_framework',
     'django_celery_results',
     'commons_api',
@@ -89,7 +90,8 @@ ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION'))
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 1000
+    'PAGE_SIZE': int(os.environ.get('REST_FRAMEWORK_PAGE_SIZE') or 1000),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
 
 DEMOCRATIC_COMMONS_GITHUB_USER = os.environ.get('DEMOCRATIC_COMMONS_GITHUB_USER', 'everypolitician')
@@ -107,6 +109,9 @@ CELERY_TASK_ROUTES = {
 }
 
 CELERY_RESULT_BACKEND = 'django-db'
+
+BOUNDARIES_SIMPLE_SHAPE_TOLERANCE = os.environ.get(
+    'BOUNDARIES_SIMPLE_SHAPE_TOLERANCE', 0.001)
 
 if 'DYNO' in os.environ:
     # django_heroku uses dj_database_url, so tell it we're using PostGIS

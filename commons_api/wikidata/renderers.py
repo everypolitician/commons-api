@@ -1,9 +1,33 @@
 import json
 
-from rest_framework.renderers import BaseRenderer
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 
 from . import models
 from .namespaces import WDS
+
+
+class GeoJSONRenderer(JSONRenderer):
+    media_type = 'application/vnd.geo+json'
+    format = 'geojson'
+
+    def to_geojson(self, data):
+        return {
+            'type': 'Feature',
+            'properties': {
+                k: v for k, v in data.items() if k != 'geometry'
+            },
+            'geometry': data['geometry'],
+        }
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if 'results' in data:
+            data = {
+                'type': 'FeatureCollection',
+                'features': [self.to_geojson(result) for result in data['results']],
+            }
+        else:
+            data = self.to_geojson(data)
+        return super().render(data, accepted_media_type, renderer_context)
 
 
 class PopoloJSONRenderer(BaseRenderer):

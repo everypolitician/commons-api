@@ -1,6 +1,7 @@
 celery
 Django
 django-dirtyfields
+django-filter
 django-heroku
 django-reversion
 djangorestframework
