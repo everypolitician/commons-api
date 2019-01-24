@@ -90,7 +90,7 @@ ENABLE_MODERATION = bool(os.environ.get('ENABLE_MODERATION'))
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 1000,
+    'PAGE_SIZE': int(os.environ.get('REST_FRAMEWORK_PAGE_SIZE') or 1000),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
 
