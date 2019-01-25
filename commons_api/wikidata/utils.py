@@ -1,7 +1,7 @@
 from typing import Mapping
 
 import re
-from SPARQLWrapper import SPARQLWrapper, JSON, POST
+import SPARQLWrapper
 from django.conf import settings
 from django.template.loader import get_template
 from django.utils import translation
@@ -64,8 +64,8 @@ def select_multilingual(data: Mapping[str,object],
 
 
 def templated_wikidata_query(query_name, context):
-    sparql = SPARQLWrapper(settings.WDQS_URL)
-    sparql.setMethod(POST)
+    sparql = SPARQLWrapper.SPARQLWrapper(settings.WDQS_URL)
+    sparql.setMethod(SPARQLWrapper.POST)
     sparql.setQuery(get_template(query_name).render(context))
-    sparql.setReturnFormat(JSON)
+    sparql.setReturnFormat(SPARQLWrapper.JSON)
     return sparql.query().convert()
