@@ -53,6 +53,16 @@ class CountryDetailView(DetailView):
             messages.info(request, "Boundaries for {} will "
                                    "be refreshed".format(self.object))
 
+        if 'refresh-geoshape' in request.POST:
+            from commons_api.wikidata.tasks import refresh_geoshape
+            from django.contrib.contenttypes.models import ContentType
+            last_queued = timezone.now()
+            self.model.objects.filter(pk=self.object.pk).update(refresh_geoshape_last_queued=last_queued)
+            ct = ContentType.objects.get_for_model(self.model)
+            refresh_geoshape.delay(ct.app_label, ct.model, self.object.id, queued_at=last_queued)
+            messages.info(request, "Getting boundary from wikidata "
+                                   "for {}".format(self.object))
+
         return redirect(self.object.get_absolute_url())
 
 

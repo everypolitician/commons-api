@@ -82,3 +82,15 @@ class RefreshGeoshapeTestCase(TestCase):
         requests_get.called_once_with(geoshape_url, headers={'If-Modified-Since': 'Fri, 25 May 2018 14:44:24 GMT'})
         # Has done nothing, because it assumes a current boundary is up to date
         self.assertEqual(0, Boundary.objects.count())
+
+    @unittest.mock.patch('commons_api.wikidata.tasks.refresh_geoshape')
+    def testPostCountry(self, refresh_geoshape):
+        queued_at = timezone.now()
+        geoshape_url = 'http://example.org/some/geoshape.map'
+        country = models.Country.objects.create(id='Q142',
+                                                refresh_geoshape_last_queued=queued_at,
+                                                geoshape_url=geoshape_url)
+        response = self.client.post('/country/Q142', {'refresh-geoshape': None})
+        country.refresh_from_db()
+        refresh_geoshape.delay.assert_called_once_with('wikidata', 'country', 'Q142',
+                                                       queued_at=country.refresh_geoshape_last_queued)
