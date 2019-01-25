@@ -31,7 +31,7 @@ class GeoJSONRenderer(JSONRenderer):
         return super().render(data, accepted_media_type, renderer_context)
 
 
-class PopoloJSONRenderer(BaseRenderer):
+class PopoloJSONRenderer(JSONRenderer):
     media_type = 'application/popolo+json'
     format = 'popolo-json'
 
