@@ -75,8 +75,10 @@ def update_boundaries_for_country(country_id: str, repo_full_name: str=None):
     if repo_full_name:
         github_repo = g.get_repo(repo_full_name)
     else:
-        github_repo = get_github_repo_for_country(country)
-
+        try:
+            github_repo = get_github_repo_for_country(country)
+        except ValueError:
+            return
     try:
         boundaries_url = 'https://raw.githubusercontent.com/{repo_full_name}/master/boundaries/build/'.format(
             repo_full_name=github_repo.full_name
