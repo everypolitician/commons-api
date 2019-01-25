@@ -47,4 +47,46 @@
     {% else %}
     {% endif %}
 
+    {% include "wikidata/map.html" %}
+
+
+    <h2>Boundary</h2>
+
+    <div id="mapid" style="width: 600px; height: 400px;"></div>
+
+    <script>
+
+
+        var mymap = L.map('mapid');
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: 'Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(mymap);
+
+
+        function zoomToFeature(e) {
+               mymap.fitBounds(e.target.getBounds());
+            }
+
+        function onEachFeature(feature, layer) {
+                layer.on({
+                    click: zoomToFeature
+                });
+                if (feature.properties && feature.properties.labels.en) {
+                    layer.bindPopup(
+                        '<a href="/electoral-district/' + feature.properties.id + '">' + feature.properties.labels.en + '</a>'
+                    );
+                }
+            }
+
+        fetch('/api/electoral-district/?format=geojson&geometry=simple_shape&legislative_house={{ legislativehouse.id|safe }}').then(response => {
+          return response.json();
+        }).then(data => {
+            var area = new L.GeoJSON(data, {onEachFeature: onEachFeature});
+            area.addTo(mymap);
+            mymap.fitBounds(area.getBounds());
+        });
+
+    </script>
 {% endblock %}
