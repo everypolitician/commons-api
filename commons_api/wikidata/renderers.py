@@ -30,7 +30,6 @@ class GeoJSONRenderer(JSONRenderer):
             data = self.to_geojson(data)
         return super().render(data, accepted_media_type, renderer_context)
 
-
 class PopoloJSONRenderer(JSONRenderer):
     media_type = 'application/popolo+json'
     format = 'popolo-json'
@@ -103,3 +102,25 @@ class PopoloJSONRenderer(JSONRenderer):
             'areas': data['districts'],
             'memberships': memberships,
         }, accepted_media_type, renderer_context)
+
+
+class PopoloGeoJSONRenderer(GeoJSONRenderer):
+    media_type = 'application/popolo+vnd.geo+json'
+    format = 'popolo-geojson'
+
+    def update_district_with_membership(self, district, membership):
+        try:
+            district['memberships'] += [membership]
+        except KeyError as e:
+            district['memberships'] = [membership]
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        districts = data['districts']
+        districts_by_id = {district['id']: district for district in districts}
+        for membership in data['memberships']:
+            try:
+                self.update_district_with_membership(districts_by_id[membership['district_id']], membership)
+            except KeyError:
+                pass        # Not all members have districts, not all districts will be in the districts_by_id
+
+        return super().render({'results': list(districts)}, accepted_media_type, renderer_context)
