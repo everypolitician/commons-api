@@ -157,39 +157,6 @@ class WikidataItem(Moderateable, Timebound):
                            'title': self.wikipedia_article_titles[language]}
                 for language in self.wikipedia_article_links}
 
-    def update_from_entity_data(self, graph: rdflib.Graph):
-        self.labels = lang_dict(graph.objects(self.uri, RDFS.label))
-        for prop, attr in getattr(self, 'wikidata_mapping', ()):
-            field = self._meta.get_field(attr)
-            value = graph.value(self.uri, WDT[prop], default=None)
-            if isinstance(field, (models.CharField, models.IntegerField, models.DateField)):
-                if value is None and not field.null:
-                    value = ''
-                setattr(self, attr, value)
-            elif isinstance(field, models.ForeignKey):
-                if value:
-                    referent = field.related_model.objects.for_id_and_label(item_uri_to_id(value), '')
-                    referent.update_from_entity_data(graph)
-                    referent.save()
-                    setattr(self, attr, referent)
-                else:
-                    setattr(self, attr, None)
-            else:
-                raise TypeError("Unexpected target field type: {}".format(field))
-
-        self.wikipedia_article_links, self.wikipedia_article_titles = {}, {}
-        for article in graph.subjects(SCHEMA.about, self.uri):
-            if (article, RDF.type, SCHEMA.Article) not in graph:
-                continue
-            article_is_part_of = graph.value(article, SCHEMA.isPartOf, None)
-            if not article_is_part_of:
-                continue
-            if graph.value(article_is_part_of, WIKIBASE.wikiGroup, None) != rdflib.Literal('wikipedia'):
-                continue
-            language = str(graph.value(article, SCHEMA.inLanguage))
-            self.wikipedia_article_links[language] = str(article)
-            self.wikipedia_article_titles[language] = str(graph.value(article, SCHEMA.name))
-
     def __str__(self):
         return self.label
 
@@ -216,24 +183,12 @@ class Country(Spatial, WikidataItem):
     class Meta:
         verbose_name_plural = 'countries'
 
-    wikidata_mapping = (
-        ('P1082', 'population'),
-        ('P41', 'flag_image'),
-    )
-
 
 class Person(WikidataItem):
     facebook_id = models.CharField(max_length=100, blank=True)
     twitter_id = models.CharField(max_length=100, blank=True)
     image_url = models.URLField(blank=True)
     sex_or_gender = models.ForeignKey(Term, null=True, blank=True, on_delete=models.CASCADE)
-
-    wikidata_mapping = (
-        ('P2013', 'facebook_id'),
-        ('P2002', 'twitter_id'),
-        ('P18', 'image_url'),
-        ('P21', 'sex_or_gender'),
-    )
 
 
 class AdministrativeArea(Spatial, WikidataItem):

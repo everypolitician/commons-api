@@ -19,17 +19,6 @@ def get_wikidata_model(app_label, model):
 
 
 @celery.shared_task
-def refresh_from_entity_data(app_label, model, id):
-    model = get_wikidata_model(app_label, model)
-    obj = model.objects.get(id=id)  # type: models.WikidataItem
-    response = requests.get('https://www.wikidata.org/wiki/Special:EntityData/{}.rdf'.format(id))
-    graph = rdflib.ConjunctiveGraph()
-    graph.parse(data=response.text, format='xml')
-    obj.update_from_entity_data(graph)
-    obj.save()
-
-
-@celery.shared_task
 def refresh_labels(app_label, model, ids=None):
     model = get_wikidata_model(app_label, model)
     if ids is None:
@@ -42,7 +31,6 @@ def refresh_labels(app_label, model, ids=None):
                                             key=lambda row: row['id']['value']):
             id = item_uri_to_id(id)
             rows = list(rows)
-            print(rows)
             items[id].labels = {row['label']['xml:lang']: row['label']['value']
                                 for row in rows}
             items[id].save()
