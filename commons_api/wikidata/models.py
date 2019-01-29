@@ -124,6 +124,8 @@ class WikidataItem(Moderateable, Timebound):
     wikipedia_article_links = HStoreField(default=dict, blank=True)
     wikipedia_article_titles = HStoreField(default=dict, blank=True)
 
+    refresh_labels_last_queued = models.DateTimeField(null=True, blank=True)
+
     objects = WikidataItemManager()
 
     @property
