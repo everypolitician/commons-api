@@ -2,24 +2,14 @@ import datetime
 
 import celery
 import itertools
-from django.apps import apps
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
-from django.utils import timezone
 
-from commons_api.wikidata import models, utils
+from commons_api.wikidata import utils
+from commons_api.wikidata.tasks.base import with_periodic_queuing_task, get_wikidata_model_by_name
 
 __all__ = ['refresh_labels']
 
 
-def get_wikidata_model(app_label, model):
-    ct = ContentType.objects.get_by_natural_key(app_label, model)
-    model = ct.model_class()
-    if not issubclass(model, models.WikidataItem):
-        raise TypeError('Model {} with content_type {}.{} is not a WikidataItem'.format(model, app_label, model))
-    return model
-
-
+@with_periodic_queuing_task
 @celery.shared_task
 def refresh_labels(app_label, model, ids=None, queued_at=None):
     queryset = get_wikidata_model_by_name(app_label, model).objects.all()
@@ -38,16 +28,3 @@ def refresh_labels(app_label, model, ids=None, queued_at=None):
                                 for row in rows}
             items[id].save()
 
-
-@celery.shared_task
-def refresh_all_labels(not_queued_in=datetime.timedelta(7)):
-    queued_at = timezone.now()
-    last_queued_threshold = queued_at - not_queued_in
-
-    for model in apps.get_models():
-        if issubclass(model, models.WikidataItem):
-            queryset = model.objects.filter(Q(labels_last_queued__lt=last_queued_threshold) |
-                                            Q(labels_last_queued__isnull=True))
-            if queryset.update(labels_last_queued=queued_at) > 0:
-                ct = ContentType.objects.get_for_model(model)
-                refresh_labels.delay(ct.app_label, ct.model, queued_at=queued_at)
