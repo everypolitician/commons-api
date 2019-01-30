@@ -1,5 +1,6 @@
 from django import apps
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 
 class CountryConfig(apps.AppConfig):
@@ -13,27 +14,23 @@ class CountryConfig(apps.AppConfig):
         post_save.connect(self.refresh_when_legislature_created,
                           sender=models.LegislativeHouse)
 
-    def refresh_from_entity_data_when_created(self, sender, instance, created, **kwargs):
-        from commons_api.wikidata import models
-        from commons_api.wikidata.tasks import refresh_from_entity_data
-        from django.contrib.contenttypes.models import ContentType
-
-        if created and issubclass(sender, models.WikidataItem):
-            ct = ContentType.objects.get_for_model(sender)
-            refresh_from_entity_data.delay(ct.app_label, ct.model, instance.id)
-
-    def refresh_legislatures_when_country_created(self, instance, created, **kwargs):
-        from commons_api.wikidata.tasks import refresh_legislature_list
+    def refresh_legislatures_when_country_created(self, sender, instance, created, **kwargs):
+        from commons_api.wikidata.tasks import refresh_legislatures
 
         if created:
-            refresh_legislature_list.delay(instance.id)
+            queued_at = timezone.now()
+            sender.objects.filter(id=instance.id).update(refresh_legislatures_last_queued=queued_at)
+            refresh_legislatures.delay(id=instance.id, queued_at=queued_at)
 
-    def refresh_when_legislature_created(self, instance, created, **kwargs):
+    def refresh_when_legislature_created(self, sender, instance, created, **kwargs):
         from commons_api.wikidata.tasks import (
-            refresh_legislature_members,
-            refresh_legislature_districts,
+            refresh_members,
+            refresh_districts,
         )
 
         if created:
-            refresh_legislature_members.delay(instance.id)
-            refresh_legislature_districts.delay(instance.id)
+            queued_at = timezone.now()
+            sender.objects.filter(id=instance.id).update(refresh_members_last_queued=queued_at,
+                                                         refresh_districts_last_queued=queued_at)
+            refresh_members.delay(id=instance.id, queued_at=queued_at)
+            refresh_districts.delay(id=instance.id, queued_at=queued_at)
