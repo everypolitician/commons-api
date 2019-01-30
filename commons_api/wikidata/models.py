@@ -180,6 +180,8 @@ class Country(Spatial, WikidataItem):
                                        help_text='Uppercase ISO 3166-1 country code',
                                        validators=[RegexValidator(r'^[A-Z]{2}$')])
 
+    refresh_legislatures_last_queued = models.DateTimeField(null=True, blank=True)
+
     class Meta:
         verbose_name_plural = 'countries'
 
@@ -214,6 +216,9 @@ class LegislativeHouse(WikidataItem):
     legislative_terms = models.ManyToManyField(LegislativeTerm, through='LegislativeHouseTerm')
     number_of_seats = models.IntegerField(null=True, blank=True)
     number_of_districts = models.IntegerField(null=True, blank=True)
+
+    refresh_members_last_queued = models.DateTimeField(null=True, blank=True)
+    refresh_districts_last_queued = models.DateTimeField(null=True, blank=True)
 
     def _filter_timebound_queryset(self, queryset, require_start=True, current=False, legislative_term=None):
         if require_start:

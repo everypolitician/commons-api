@@ -1,7 +1,9 @@
+from commons_api.wikidata.tasks.base import with_periodic_queuing_task
+
 __all__ = [
-    'refresh_legislature_list',
-    'refresh_legislature_members',
-    'refresh_legislature_districts',
+    'refresh_legislatures',
+    'refresh_members',
+    'refresh_districts',
 ]
 
 import celery
@@ -16,9 +18,10 @@ from commons_api.wikidata.utils import item_uri_to_id, statement_uri_to_id, get_
 from .. import models
 
 
+@with_periodic_queuing_task(superclass=models.Country)
 @celery.shared_task
-def refresh_legislature_list(country_id):
-    country = models.Country.objects.get(id=country_id)
+def refresh_legislatures(id, queued_at):
+    country = models.Country.objects.get(id=id, refresh_legislatures_last_queued=queued_at)
     results = templated_wikidata_query('wikidata/query/legislature_list.rq', {'country': country})
     # print(get_template('wikidata/query/legislature_list.rq').render())
     # print(len(results['results']['bindings']))
@@ -78,9 +81,11 @@ def refresh_legislature_list(country_id):
         lht.term_specific_position = term_specific_position
         lht.save()
 
+
+@with_periodic_queuing_task(superclass=models.LegislativeHouse)
 @celery.shared_task
-def refresh_legislature_members(legislature_id):
-    house = models.LegislativeHouse.objects.get(id=legislature_id)
+def refresh_members(id, queued_at):
+    house = models.LegislativeHouse.objects.get(id=id, refresh_members_last_queued=queued_at)
 
     results = templated_wikidata_query('wikidata/query/legislature_memberships.rq',
                                        {'positions': house.positions.all()})
@@ -176,9 +181,10 @@ def refresh_legislature_members(legislature_id):
     models.LegislativeMembership.objects.filter(legislative_house=house).exclude(id__in=seen_statement_ids).delete()
 
 
+@with_periodic_queuing_task(superclass=models.LegislativeHouse)
 @celery.shared_task
-def refresh_legislature_districts(legislature_id):
-    house = models.LegislativeHouse.objects.get(id=legislature_id)
+def refresh_districts(id, queued_at):
+    house = models.LegislativeHouse.objects.get(id=id, refresh_districts_last_queued=queued_at)
 
     results = templated_wikidata_query('wikidata/query/legislature_constituencies.rq',
                                        {'house': house})
