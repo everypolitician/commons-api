@@ -3,7 +3,7 @@ import unittest.mock
 from SPARQLWrapper import JSON, POST
 from django.test import TestCase
 
-from commons_api.wikidata.utils import templated_wikidata_query
+from commons_api.wikidata import utils
 
 
 class SparqlTestCase(TestCase):
@@ -16,9 +16,17 @@ class SparqlTestCase(TestCase):
         sparql_wrapper.query.return_value = sparql_results
         sparql_results.convert.return_value = sparql_data
 
-        result = templated_wikidata_query('wikidata/query/country_list.rq', {})
+        result = utils.templated_wikidata_query('wikidata/query/country_list.rq', {})
 
         sparql_wrapper.setMethod.assert_called_once_with(POST)
         sparql_wrapper.setReturnFormat.assert_called_once_with(JSON)
 
         self.assertEqual(sparql_data, result)
+
+
+class SplitEveryTestCase(TestCase):
+    def testSplitsList(self):
+        data = list(range(10))
+        result = utils.split_every(data, 3)
+        result = [list(group) for group in result]
+        self.assertEqual([[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]], result)

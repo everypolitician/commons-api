@@ -1,3 +1,4 @@
+import itertools
 from typing import Mapping
 
 import re
@@ -61,6 +62,25 @@ def select_multilingual(data: Mapping[str,object],
         except KeyError:
             continue
     return default
+
+
+def split_every(it, n):
+    """Splits an iterable into sub-iterators each of maximum length n
+
+    Each returned iterator needs consuming before the main iterator is
+    iterated over again, otherwise the returned groups will be shorter
+    than expected, or returned items returned out of order.
+    """
+    def group(first):
+        yield first
+        yield from itertools.islice(it, n-1)
+    it = iter(it)
+    while True:
+        try:
+            first = next(it)
+        except StopIteration:
+            break
+        yield group(first)
 
 
 def templated_wikidata_query(query_name, context):
