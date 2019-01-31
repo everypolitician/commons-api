@@ -5,6 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.fields.related import RelatedField
 from django.shortcuts import redirect
+from django.utils import timezone
 from django.utils.functional import cached_property
 from django.views.generic.edit import ModelFormMixin, ProcessFormView
 from operator import attrgetter
@@ -41,7 +42,9 @@ class CountryDetailView(DetailView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         if 'refresh-legislature-list' in request.POST:
-            tasks.refresh_legislature_list.delay(self.object.id)
+            self.object.refresh_legislatures_last_queued = timezone.now()
+            self.object.save()
+            tasks.refresh_legislatures.delay(self.object.id, queued_at=self.object.refresh_legislatures_last_queued)
             messages.info(request, "Legislature list for {} will "
                                    "be refreshed".format(self.object))
         if 'update-boundaries' in request.POST:
@@ -59,11 +62,15 @@ class LegislativeHouseDetailView(DetailView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         if 'refresh-legislature-members' in request.POST:
-            tasks.refresh_legislature_members.delay(self.object.id)
+            self.object.refresh_members_last_queued = timezone.now()
+            self.object.save()
+            tasks.refresh_members.delay(self.object.id, queued_at=self.object.refresh_members_last_queued)
             messages.info(request, "Legislature membership for {} "
                                    "will be refreshed".format(self.object))
         if 'refresh-legislature-districts' in request.POST:
-            tasks.refresh_legislature_districts.delay(self.object.id)
+            self.object.refresh_districts_last_queued = timezone.now()
+            self.object.save()
+            tasks.refresh_districts.delay(self.object.id, queued_at=self.object.refresh_districts_last_queued)
             messages.info(request, "Legislature districts for {} "
                                    "will be refreshed".format(self.object))
         return redirect(self.object.get_absolute_url())
