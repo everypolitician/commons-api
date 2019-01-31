@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from celery import Celery
@@ -31,5 +32,12 @@ app.conf.beat_schedule = {
     'refresh-districts-periodically': {
         'task': 'commons_api.wikidata.tasks.legislature.refresh_districts_queue_periodically',
         'schedule': 60,
+    },
+    'refresh-geoshapes-periodically': {
+        'task': 'commons_api.wikidata.tasks.geoshape.refresh_geoshape_queue_periodically',
+        'schedule': 600,
+        'kwargs': {
+            'not_queued_in': datetime.timedelta(14).total_seconds(),
+        },
     },
 }
