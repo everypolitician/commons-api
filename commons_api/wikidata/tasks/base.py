@@ -23,12 +23,13 @@ def get_wikidata_models(superclass=models.WikidataItem):
 
 
 def with_periodic_queuing_task(last_queued_attribute=None,
-                               superclass=models.WikidataItem):
+                               superclass=models.WikidataItem,
+                               queryset_filter=None):
     """A decorator that creates a task that will call the decorated task for objects that haven't been refreshed recently
 
     Usage:
 
-    @with_periodic_queuing_task('update_geoshape_last_queued', Spatial)
+    @with_periodic_queuing_task('update_geoshape_last_queued', Spatial, queryset_filter=lambda qs: qs.filter(…))
     @celery.shared_task
     def update_geoshape(…):
         …
@@ -50,6 +51,8 @@ def with_periodic_queuing_task(last_queued_attribute=None,
     :param last_queued_attribute: The name of the attribute which records when an object was last queued to have the
         decorated task act upon it. If omitted, defaults to the name of the task with '_last_queued' appended
     :param superclass: A model superclass for which the task is relevant
+    :param queryset_filter: If given, a function that will be applied to a queryset to further restrict items that
+        this task applies to
     :returns: A decorator, which can be applied to a celery task
     """
     if callable(last_queued_attribute):
@@ -75,12 +78,17 @@ def with_periodic_queuing_task(last_queued_attribute=None,
 
         def queuing_task(not_queued_in=datetime.timedelta(7)):
             queued_at = timezone.now()
+            if isinstance(not_queued_in, (int, float)):
+                # Interpret as seconds
+                not_queued_in = datetime.timedelta(0, not_queued_in)
             last_queued_threshold = queued_at - not_queued_in
 
             for model in get_wikidata_models(superclass):
                 # Find all objects that haven't been queued recently, or have never been queued.
                 queryset = model.objects.filter(Q(**{last_queued_attribute + '__lt': last_queued_threshold}) |
                                                 Q(**{last_queued_attribute + '__isnull': True}))
+                if queryset_filter:
+                    queryset = queryset_filter(queryset)
                 # Try to update any matching objects, and if any have been updated, we'll be queuing the task for them.
                 if queryset.update(**{last_queued_attribute: queued_at}) > 0:
                     task_kwargs = {'queued_at': queued_at}
@@ -95,6 +103,8 @@ def with_periodic_queuing_task(last_queued_attribute=None,
                     # object individually.
                     if 'id' in task_signature.parameters:
                         filter_kwargs = {last_queued_attribute: queued_at}
+                        # We don't need to apply queryset_filter here, as only objects filtered with it above will
+                        # have a matching last_queued value
                         for item_id in model.objects.filter(**filter_kwargs).values_list('id', flat=True):
                             task.delay(id=item_id, **task_kwargs)
                     else:
