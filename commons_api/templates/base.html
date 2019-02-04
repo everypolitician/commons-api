@@ -3,13 +3,8 @@
 <head>
     <meta charset="utf-8">
     <title>{% block title %}{{ title|default:object.label|default:"Democratic Commons" }}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ STATIC_URL }}lib/pure/pure-min.css" type="text/css">
-    <!--[if lte IE 8]>
-    <link rel="stylesheet" href="{{ STATIC_URL }}lib/pure/grids-responsive-old-ie-min.css">
-    <![endif]-->
-    <!--[if gt IE 8]><!-->
-    <link rel="stylesheet" href="{{ STATIC_URL }}lib/pure/grids-responsive-min.css">
-    <!--<![endif]-->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
+          integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ STATIC_URL }}lib/components-font-awesome/css/font-awesome.min.css" type="text/css">
     <link rel="stylesheet" href="{{ STATIC_URL }}css/base.css" type="text/css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
