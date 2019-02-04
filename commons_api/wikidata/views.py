@@ -61,7 +61,7 @@ class APILinksMixin(ContextMixin):
         return context
 
 
-class CountryListView(ListView):
+class CountryListView(APILinksMixin, ListView):
     model = models.Country
     template_name = 'wikidata/country_list.html'
     context_object_name = 'country_list'
@@ -81,8 +81,15 @@ class CountryListView(ListView):
         return sorted(super().get_queryset(), key=attrgetter('label'))
 
 
-class CountryDetailView(DetailView):
+class CountryDetailView(APILinksMixin, DetailView):
     model = models.Country
+
+    def get_api_base_urls(self):
+        return [
+            *super().get_api_base_urls(),
+            ('legislative houses',
+             reverse('wikidata:api:legislativehouse-list') + '?country=' + self.object.id),
+        ]
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -101,7 +108,7 @@ class CountryDetailView(DetailView):
         return redirect(self.object.get_absolute_url())
 
 
-class LegislativeHouseDetailView(DetailView):
+class LegislativeHouseDetailView(APILinksMixin, DetailView):
     model = models.LegislativeHouse
 
     def post(self, request, *args, **kwargs):
@@ -133,11 +140,25 @@ class PersonDetailView(DetailView):
     model = models.Person
 
 
-class LegislativeHouseMembershipView(DetailView):
+class LegislativeHouseMembershipView(APILinksMixin, DetailView):
     model = models.LegislativeHouse
     template_name_suffix = '_membership'
     all_members = False
     current_members = False
+
+    def get_api_base_urls(self):
+        if self.current_members:
+            query_string = 'current_members'
+        elif self.all_members:
+            query_string = 'all_members'
+        elif self.legislative_term:
+            query_string = 'legislative_term=' + self.legislative_term.pk
+
+        return [(
+            'memberships',
+            reverse('wikidata:api:legislativehouse-memberships-detail',
+                    kwargs={'pk': self.object.pk}) + '?' + query_string,
+        )]
 
     @cached_property
     def legislative_house_term(self):
