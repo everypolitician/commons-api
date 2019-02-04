@@ -11,8 +11,8 @@ class CountryViewSet(ReadOnlyModelViewSet):
     queryset = models.Country.objects.all().select_related('boundary')
     serializer_class = serializers.CountrySerializer
     renderer_classes = (
-        BrowsableAPIRenderer,
         JSONRenderer,
+        BrowsableAPIRenderer,
         renderers.GeoJSONRenderer,
     )
 
@@ -25,8 +25,8 @@ class ElectoralDistrictViewSet(ReadOnlyModelViewSet):
         DjangoFilterBackend,
     )
     renderer_classes = (
-        BrowsableAPIRenderer,
         JSONRenderer,
+        BrowsableAPIRenderer,
         renderers.GeoJSONRenderer,
     )
 
@@ -44,8 +44,8 @@ class LegislativeHouseMembershipViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = models.LegislativeHouse.objects.all()
     serializer_class = serializers.LegislativeHouseMembershipSerializer
     renderer_classes = (
-        BrowsableAPIRenderer,
         JSONRenderer,
+        BrowsableAPIRenderer,
         renderers.PopoloJSONRenderer,
     )
 
