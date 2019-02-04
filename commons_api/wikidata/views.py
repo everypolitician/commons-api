@@ -5,15 +5,60 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.db.models.fields.related import RelatedField
 from django.shortcuts import redirect
+from django.urls import reverse, get_resolver, resolve
 from django.utils import timezone
 from django.utils.functional import cached_property
+from django.utils.translation import gettext_lazy as _
+from django.views.generic.base import ContextMixin
 from django.views.generic.edit import ModelFormMixin, ProcessFormView
 from operator import attrgetter
 
 from django.views.generic import ListView, DetailView, FormView
+from rest_framework.utils.urls import replace_query_param
 
 from commons_api.wikidata import tasks
 from . import forms, models
+
+
+class APILinksMixin(ContextMixin):
+    api_format_names = {
+        'api': _('Browsable API'),
+        'json': _('JSON'),
+        'geojson': _('GeoJSON'),
+        'popolo-json': _('Popolo JSON'),
+    }
+
+    def get_api_base_urls(self):
+        if isinstance(self, ListView):
+            return [(
+                self.model._meta.verbose_name_plural,
+                reverse('wikidata:api:{}-list'.format(self.model._meta.model_name))
+            )]
+        elif isinstance(self, DetailView):
+            return [(
+                self.model._meta.verbose_name,
+                reverse('wikidata:api:{}-detail'.format(self.model._meta.model_name),
+                        kwargs={'pk': self.object.pk})
+            )]
+        else:
+            raise NotImplementedError
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        api_base_urls = self.get_api_base_urls()
+        if api_base_urls:
+            context['api_urls'] = []
+            for name, base_url in api_base_urls:
+                api_view = resolve(base_url.split('?')[0]).func.cls
+                context['api_urls'].append({
+                    'name': name,
+                    'urls': [{
+                        'format': renderer.format,
+                        'name': self.api_format_names[renderer.format],
+                        'url': replace_query_param(base_url, 'format', renderer.format)
+                    } for renderer in api_view.renderer_classes],
+                })
+        return context
 
 
 class CountryListView(ListView):

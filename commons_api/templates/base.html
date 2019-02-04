@@ -53,6 +53,7 @@
                     {% block header %}<h1>{% block h1_title %}{{ object.label|default:"Hello" }}{% endblock %}</h1>{% endblock %}
 
                     {% include "wikidata/wikimedia_links.html" %}
+                    {% include "wikidata/api_links.html" %}
                     {% block actions %}{% endblock %}
                 {% endblock %}
                 {% block content %}

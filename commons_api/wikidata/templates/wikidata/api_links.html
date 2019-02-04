@@ -1,0 +1,15 @@
+{% if api_urls %}
+    <div class="api-links">
+        <h2>View data in API</h2>
+        {% for api_url in api_urls %}
+            {% if api_urls|length > 1 %}
+                <h3>{{ api_url.name|capfirst }}</h3>
+            {% endif %}
+            <div class="pure-button-group" role="group" aria-label="{{ api_url.name }}">
+                {% for api_url in api_url.urls %}
+                    <a href="{{ api_url.url }}" class="pure-button">{{ api_url.name }}</a>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
