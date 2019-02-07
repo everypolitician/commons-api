@@ -9,22 +9,18 @@ __all__ = [
 import celery
 import collections
 import itertools
-from SPARQLWrapper import SPARQLWrapper, JSON
-from django.conf import settings
-from django.template.loader import get_template
 
-from commons_api.wikidata.namespaces import WD
 from commons_api.wikidata.utils import item_uri_to_id, statement_uri_to_id, get_date, templated_wikidata_query
-from .. import models
+from .. import models, utils
 
 
 @with_periodic_queuing_task(superclass=models.Country)
-@celery.shared_task
-def refresh_legislatures(id, queued_at):
+@celery.shared_task(bind=True, queue='wdqs')
+@utils.queries_wikidata
+def refresh_legislatures(self, id, queued_at, rate_limiting_handler):
     country = models.Country.objects.get(id=id, refresh_legislatures_last_queued=queued_at)
-    results = templated_wikidata_query('wikidata/query/legislature_list.rq', {'country': country})
-    # print(get_template('wikidata/query/legislature_list.rq').render())
-    # print(len(results['results']['bindings']))
+    results = templated_wikidata_query('wikidata/query/legislature_list.rq', {'country': country},
+                                       rate_limiting_handler)
     legislature_positions = collections.defaultdict(list)
     legislative_terms = collections.defaultdict(list)
     for result in results['results']['bindings']:
@@ -52,7 +48,8 @@ def refresh_legislatures(id, queued_at):
                        for position in positions]
 
     results = templated_wikidata_query('wikidata/query/legislature_terms_list.rq',
-                                       {'house_positions': house_positions})
+                                       {'house_positions': house_positions},
+                                       rate_limiting_handler)
     for result in results['results']['bindings']:
         if 'termSpecificPositionLabel' in result:
             term_specific_position = models.Position.objects.for_id_and_label(
@@ -83,12 +80,14 @@ def refresh_legislatures(id, queued_at):
 
 
 @with_periodic_queuing_task(superclass=models.LegislativeHouse)
-@celery.shared_task
-def refresh_members(id, queued_at):
+@celery.shared_task(bind=True, queue='wdqs')
+@utils.queries_wikidata
+def refresh_members(self, id, queued_at, rate_limiting_handler):
     house = models.LegislativeHouse.objects.get(id=id, refresh_members_last_queued=queued_at)
 
     results = templated_wikidata_query('wikidata/query/legislature_memberships.rq',
-                                       {'positions': house.positions.all()})
+                                       {'positions': house.positions.all()},
+                                       rate_limiting_handler)
     seen_statement_ids = set()
     for i, (statement, rows) in enumerate(itertools.groupby(results['results']['bindings'],
                                                             key=lambda row: row['statement']['value'])):
@@ -182,12 +181,14 @@ def refresh_members(id, queued_at):
 
 
 @with_periodic_queuing_task(superclass=models.LegislativeHouse)
-@celery.shared_task
-def refresh_districts(id, queued_at):
+@celery.shared_task(bind=True, queue='wdqs')
+@utils.queries_wikidata
+def refresh_districts(self, id, queued_at, rate_limiting_handler):
     house = models.LegislativeHouse.objects.get(id=id, refresh_districts_last_queued=queued_at)
 
     results = templated_wikidata_query('wikidata/query/legislature_constituencies.rq',
-                                       {'house': house})
+                                       {'house': house},
+                                       rate_limiting_handler)
 
     for result in results['results']['bindings']:
         electoral_district = models.ElectoralDistrict.objects.for_id_and_label(item_uri_to_id(result['constituency']),
