@@ -10,8 +10,9 @@ __all__ = ['refresh_labels']
 
 
 @with_periodic_queuing_task
-@celery.shared_task
-def refresh_labels(app_label, model, ids=None, queued_at=None):
+@celery.shared_task(bind=True, queue='wdqs')
+@utils.queries_wikidata
+def refresh_labels(self, app_label, model, ids=None, queued_at=None, rate_limiting_handler=None):
     queryset = get_wikidata_model_by_name(app_label, model).objects.all()
     if queued_at is not None:
         queryset = queryset.filter(refresh_labels_last_queued=queued_at)
@@ -19,7 +20,9 @@ def refresh_labels(app_label, model, ids=None, queued_at=None):
         queryset = queryset.objects.filter(id__in=ids)
     for items in utils.split_every(queryset, 250):
         items = {item.id: item for item in items}
-        results = utils.templated_wikidata_query('wikidata/query/labels.rq', {'ids': sorted(items)})
+        results = utils.templated_wikidata_query('wikidata/query/labels.rq',
+                                                 {'ids': sorted(items)},
+                                                 rate_limiting_handler)
         for id, rows in itertools.groupby(results['results']['bindings'],
                                             key=lambda row: row['id']['value']):
             id = utils.item_uri_to_id(id)

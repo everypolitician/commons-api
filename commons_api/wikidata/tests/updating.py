@@ -51,6 +51,6 @@ class LabelsTestCase(TestCase):
             }]}
         }
         wikidata_item.refresh_labels('wikidata', 'country', queued_at=self.refresh_labels_last_queued)
-        templated_wikidata_query.assert_called_once_with('wikidata/query/labels.rq', {'ids': [self.country.id]})
+        templated_wikidata_query.assert_called_once_with('wikidata/query/labels.rq', {'ids': [self.country.id]}, None)
         self.country.refresh_from_db()
         self.assertEqual({'en': 'France', 'de': 'Frankreich'}, self.country.labels)
