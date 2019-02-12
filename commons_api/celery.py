@@ -20,6 +20,10 @@ app.conf.beat_schedule = {
         'task': 'commons_api.wikidata.tasks.wikidata_item.refresh_labels_queue_periodically',
         'schedule': 60,
     },
+    'refresh-wikidata-articles-periodically': {
+        'task': 'commons_api.wikidata.tasks.wikidata_item.refresh_wikipedia_articles_queue_periodically',
+        'schedule': 60,
+    },
     'refresh-legislatures-periodically': {
         'task': 'commons_api.wikidata.tasks.legislature.refresh_legislatures_queue_periodically',
         'schedule': 60,

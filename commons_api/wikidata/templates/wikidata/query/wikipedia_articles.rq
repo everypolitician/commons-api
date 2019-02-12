@@ -1,0 +1,7 @@
+SELECT ?id ?article ?name {
+  {% include "wikidata/query/id_values.rq" %}
+  ?article schema:about ?id ;
+           schema:name ?name ;
+           schema:isPartOf/wikibase:wikiGroup ?group .
+  FILTER(?group = 'wikipedia') .
+} ORDER BY ?id
