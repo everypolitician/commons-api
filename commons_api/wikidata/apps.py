@@ -17,7 +17,7 @@ class CountryConfig(apps.AppConfig):
     def refresh_legislatures_when_country_created(self, sender, instance, created, **kwargs):
         from commons_api.wikidata.tasks import refresh_legislatures
 
-        if created:
+        if created and not instance.refresh_legislatures_last_queued:
             queued_at = timezone.now()
             sender.objects.filter(id=instance.id).update(refresh_legislatures_last_queued=queued_at)
             refresh_legislatures.delay(id=instance.id, queued_at=queued_at)
@@ -28,9 +28,10 @@ class CountryConfig(apps.AppConfig):
             refresh_districts,
         )
 
-        if created:
-            queued_at = timezone.now()
-            sender.objects.filter(id=instance.id).update(refresh_members_last_queued=queued_at,
-                                                         refresh_districts_last_queued=queued_at)
+        queued_at = timezone.now()
+        if created and not instance.refresh_members_last_queued:
+            sender.objects.filter(id=instance.id).update(refresh_members_last_queued=queued_at)
             refresh_members.delay(id=instance.id, queued_at=queued_at)
+        if created and not instance.refresh_districts_last_queued:
+            sender.objects.filter(id=instance.id).update(refresh_districts_last_queued=queued_at)
             refresh_districts.delay(id=instance.id, queued_at=queued_at)

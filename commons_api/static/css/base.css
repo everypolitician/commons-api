@@ -78,3 +78,14 @@ select, input {
     height: 32px;
     text-indent: -9999px;
 }
+
+.api-links {
+    padding: 1em;
+    float: right;
+    border: 1px solid #333;
+    border-radius: 0.2em;
+}
+
+.api-links h3 {
+    margin: 0.2em 0 0 0;
+}

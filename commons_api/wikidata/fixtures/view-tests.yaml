@@ -1,0 +1,36 @@
+- model: wikidata.Country
+  pk: Q145
+  fields:
+    labels:
+      en: United Kingdom
+    population: 104
+    iso_3166_1_code: gb
+    refresh_legislatures_last_queued: 1970-01-01T00:00:00+00:00
+- model: wikidata.AdministrativeArea
+  pk: Q145
+  fields:
+    labels:
+      en: United Kingdom
+- model: wikidata.LegislativeHouse
+  pk: Q11005
+  fields:
+    labels:
+      en: House of Commons
+    country: Q145
+    administrative_area: Q145
+    refresh_members_last_queued: 1970-01-01T00:00:00+00:00
+    refresh_districts_last_queued: 1970-01-01T00:00:00+00:00
+- model: wikidata.LegislativeTerm
+  pk: Q29974940
+  fields:
+    labels:
+      en: 57th United Kingdom Parliament
+      cy: 57fed Llywodraeth y DU
+    start: 2017-06-09
+- model: wikidata.LegislativeHouseTerm
+  pk: 'Q11005/Q29974940'
+  fields:
+    legislative_term: Q29974940
+    legislative_house: Q11005
+    number_of_seats: 650
+    number_of_districts: 650
