@@ -1,4 +1,4 @@
-SELECT ?constituency ?constituencyLabel ?start ?end {
+SELECT ?constituency ?constituencyLabel ?start ?end ?geoshape {
   ?constituencyType wdt:P279* ?constituencySupertype .
   ?constituencySupertype p:P279 ?constituencyTypeSubclassOfStatement .
   ?constituencyTypeSubclassOfStatement ps:P279/wdt:P279* wd:Q192611 ;
@@ -10,5 +10,6 @@ SELECT ?constituency ?constituencyLabel ?start ?end {
   OPTIONAL {
     ?constituency wdt:P576 ?end .
   }
+  OPTIONAL { ?constituency wdt:P3896 ?geoshape }       # geoshape
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
 }

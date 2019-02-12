@@ -31,6 +31,10 @@ class Timebound(models.Model):
 
 class Spatial(models.Model):
     boundary = models.ForeignKey('boundaries.Boundary', null=True, blank=True, on_delete=models.SET_NULL)
+    geoshape_url = models.URLField(null=True, blank=True)
+    geoshape_last_modified = models.DateTimeField(null=True, blank=True)
+
+    refresh_geoshape_last_queued = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         abstract = True

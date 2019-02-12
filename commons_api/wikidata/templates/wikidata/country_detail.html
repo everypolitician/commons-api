@@ -10,6 +10,9 @@
       {% if country.iso_3166_1_code %}
         <input type="submit" name="update-boundaries" value="Update boundaries">
       {% endif %}
+      {% if country.geoshape_url %}
+        <input type="submit" name="refresh-geoshape" value="Refresh boundary from Wikidata">
+      {% endif %}
     </form>
     </div>
 {% endblock %}

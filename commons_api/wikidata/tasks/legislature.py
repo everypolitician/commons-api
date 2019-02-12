@@ -190,9 +190,11 @@ def refresh_districts(id, queued_at):
                                        {'house': house})
 
     for result in results['results']['bindings']:
+        print(result)
         electoral_district = models.ElectoralDistrict.objects.for_id_and_label(item_uri_to_id(result['constituency']),
                                                                                result['constituencyLabel']['value'])
         electoral_district.start = get_date(result.get('start'))
         electoral_district.end = get_date(result.get('end'))
         electoral_district.legislative_house = house
+        electoral_district.geoshape_url = result['geoshape']['value'] if result.get('geoshape') else None
         electoral_district.save()
