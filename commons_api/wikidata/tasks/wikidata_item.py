@@ -12,6 +12,7 @@ __all__ = ['refresh_labels']
 @with_periodic_queuing_task
 @celery.shared_task
 def refresh_labels(app_label, model, ids=None, queued_at=None):
+    """Refreshes all labels for the given model"""
     queryset = get_wikidata_model_by_name(app_label, model).objects.all()
     if queued_at is not None:
         queryset = queryset.filter(refresh_labels_last_queued=queued_at)
