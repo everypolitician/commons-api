@@ -16,6 +16,7 @@ import os
 from os.path import abspath, dirname
 import sys
 sys.path.insert(1, dirname(dirname(dirname(abspath(__file__)))))
+os.environ['SECRET_KEY'] = 'secret key when building docs'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'commons_api.settings'
 import django
 django.setup()
