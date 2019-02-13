@@ -14,10 +14,30 @@
 #
 import os
 from os.path import abspath, dirname
+from unittest.mock import Mock
 import sys
 sys.path.insert(1, dirname(dirname(dirname(abspath(__file__)))))
 os.environ['SECRET_KEY'] = 'secret key when building docs'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'commons_api.settings'
+
+MOCK_MODULES = {'django.contrib.gis.gdal.libgdal',
+                'django.contrib.gis.gdal.prototypes.ds',
+                'django.contrib.gis.gdal.prototypes.raster',
+                'django.contrib.gis.geos.collections',
+                'django.contrib.gis.geos.io',
+                'django.contrib.gis.geos.libgeos',
+                'django.contrib.gis.geos.linestring',
+                'django.contrib.gis.geos.point',
+                'django.contrib.gis.geos.polygon',
+                'django.contrib.gis.geos.prototypes.io',
+                'django.contrib.gis.geos.prototypes.coordseq',
+                'django.contrib.gis.geos.prototypes.geom',
+                'django.contrib.gis.geos.prototypes.misc',
+                'django.contrib.gis.geos.prototypes.predicates',
+                'django.contrib.gis.geos.prototypes.topology',
+                'django.contrib.gis.geos.geometry'}
+sys.modules.update({name: Mock() for name in MOCK_MODULES})
+
 import django
 django.setup()
 # sys.path.insert(0, os.path.abspath('.'))
