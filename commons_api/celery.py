@@ -20,6 +20,11 @@ app.conf.beat_schedule = {
         'task': 'commons_api.wikidata.tasks.wikidata_item.refresh_labels_queue_periodically',
         'schedule': 60,
     },
+    'refresh-metadata-periodically': {
+        'task': 'commons_api.wikidata.tasks.wikidata_item.refresh_metadata_queue_periodically',
+        'schedule': 60,
+        'kwargs': {'not_queued_in': 3600 * 24 * 14},
+    },
     'refresh-legislatures-periodically': {
         'task': 'commons_api.wikidata.tasks.legislature.refresh_legislatures_queue_periodically',
         'schedule': 60,
