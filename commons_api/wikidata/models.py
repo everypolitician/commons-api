@@ -219,6 +219,8 @@ class Person(WikidataItem):
     twitter_id = models.CharField(max_length=100, blank=True)
     image_url = models.URLField(max_length=512, blank=True)
     sex_or_gender = models.ForeignKey(Term, null=True, blank=True, on_delete=models.CASCADE)
+    date_of_birth = models.DateField(null=True, blank=True)
+    date_of_death = models.DateField(null=True, blank=True)
 
 
 class AdministrativeArea(Spatial, WikidataItem):
