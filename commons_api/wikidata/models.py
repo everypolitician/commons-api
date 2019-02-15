@@ -217,7 +217,7 @@ class Country(Spatial, WikidataItem):
 class Person(WikidataItem):
     facebook_id = models.CharField(max_length=100, blank=True)
     twitter_id = models.CharField(max_length=100, blank=True)
-    image_url = models.URLField(blank=True)
+    image_url = models.URLField(max_length=512, blank=True)
     sex_or_gender = models.ForeignKey(Term, null=True, blank=True, on_delete=models.CASCADE)
 
 
