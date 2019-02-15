@@ -1,0 +1,10 @@
+SELECT ?id ?twitter_id ?facebook_id ?sex_or_gender ?sex_or_genderLabel ?image_url ?date_of_birth ?date_of_death WHERE {
+  {% include "wikidata/query/id_values.rq" %}
+  OPTIONAL { ?id wdt:P2002 ?twitter_id }
+  OPTIONAL { ?id wdt:P2013 ?facebook_id }
+  OPTIONAL { ?id wdt:P21 ?sex_or_gender }
+  OPTIONAL { ?id wdt:P18 ?image_url }
+  OPTIONAL { ?id wdt:P569 ?date_of_birth }
+  OPTIONAL { ?id wdt:P570 ?date_of_death }
+  {% include 'wikidata/query/label_service.rq' %}
+} ORDER BY ?id
