@@ -1,3 +1,4 @@
+import collections
 from html import escape
 
 import rdflib
@@ -157,6 +158,32 @@ class WikidataItem(Moderateable, Timebound):
         return {language: {'href': self.wikipedia_article_links[language],
                            'title': self.wikipedia_article_titles[language]}
                 for language in self.wikipedia_article_links}
+
+    def update_from_metadata(self, rows, vars):
+        """Updates fields from SPARQL query results"""
+        field_values = collections.defaultdict(set)
+        for row in rows:
+            for name, binding in row.items():
+                if binding['type'] != 'bnode':
+                    field_values[name].add(binding['value'])
+        field_values.pop('id', None)
+        for var in vars:
+            values = field_values[var]
+            field = self._meta.get_field(name)
+            if not values:
+                setattr(self, name, None)
+            elif isinstance(field, (models.CharField, models.DateTimeField)):
+                setattr(self, name, values.pop())
+            elif isinstance(field, models.DateField):
+                # Wikidata provides dates as full timestamps, but we only want the 'YYYY-MM-DD' part.
+                setattr(self, name, values.pop()[:10])
+            elif isinstance(field, models.ForeignKey):
+                uri, label = values.pop(), field_values.get(name + 'Label', {''}).pop()
+                related = field.related_model.objects.for_id_and_label(item_uri_to_id(uri),
+                                                                       label, save=True)
+                setattr(self, name, related)
+            else:
+                raise ValueError("Unexpected field: {}".format(field))
 
     def __str__(self):
         return self.label
