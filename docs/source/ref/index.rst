@@ -7,3 +7,4 @@ Reference
 
    tasks
    querying-wikidata
+   renderers
