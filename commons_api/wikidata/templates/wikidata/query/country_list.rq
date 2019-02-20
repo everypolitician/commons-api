@@ -1,8 +1,8 @@
 # Adapted from https://github.com/everypolitician/legislative-explorer/blob/master/lib/query/country_list.rb
 
-SELECT ?item ?itemLabel ?itemCode WHERE {
+SELECT DISTINCT ?item ?itemLabel ?itemCode WHERE {
   ?item p:P31 ?instanceOfStatement .
-  ?instanceOfStatement ps:P31 wd:Q6256 .
+  ?instanceOfStatement ps:P31/wdt:P279* wd:Q6256 .
   MINUS { ?instanceOfStatement pq:P582 ?end }  # no longer a country
   ?item p:P463 ?memberOfStatement .
   ?memberOfStatement ps:P463 wd:Q1065 .
