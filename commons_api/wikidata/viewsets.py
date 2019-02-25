@@ -47,6 +47,7 @@ class LegislativeHouseMembershipViewSet(RetrieveModelMixin, GenericViewSet):
         JSONRenderer,
         BrowsableAPIRenderer,
         renderers.PopoloJSONRenderer,
+        renderers.PopoloGeoJSONRenderer,
     )
 
     def get_serializer_context(self):
